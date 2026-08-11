@@ -1,0 +1,877 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"
+    "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="INSERT_UPDATE">
+
+	<update id="insertTraceHistory" parameterClass="map">
+		INSERT INTO TM_TRACE_HISTORY
+		(
+			 TRX_ROUTE
+			,STEP
+			,IKAMS_STEP
+			,STATUS
+		)VALUES(
+			 #AMS_TRX_ROUTE#
+			,#AMS_STEP#
+			,#IKAMS_STEP#
+			,#HISTORY_STATUS#
+		)
+	</update>
+
+	<update id="insertTrace" parameterClass="map">
+		INSERT INTO TM_TRACE
+		(
+			 TRX_ROUTE
+			 ,KTNET_ROUTE
+			 ,ORIGIN_MSG
+		)VALUES(
+			 #AMS_TRX_ROUTE#
+			 ,#KTNET_ROUTE#
+			 <isNotEmpty property="ORG_MSG">
+			 ,UTL_COMPRESS.LZ_COMPRESS(#ORG_MSG:BLOB#)
+			 </isNotEmpty>
+		)
+	</update>
+
+	<update id="reprocTrace" parameterClass="map">
+		UPDATE TM_TRACE
+		SET
+			REPROC = 'Y'
+		WHERE TRX_ROUTE = #RE_TRX_ROUTE#
+	</update>
+
+	<update id="UpdateTrace" parameterClass="map">
+		UPDATE TM_TRACE
+		SET
+			ORG_ROUTE = #ORG_ROUTE#
+			<isNotEmpty property="AMS_STEP">
+			,STEP = #AMS_STEP#
+			</isNotEmpty>
+			<isNotEmpty property="IKAMS_STEP">
+			,IKAMS_STEP = #IKAMS_STEP#
+			</isNotEmpty>
+			,SMI = #SMI#
+			,VERSION = #VERSION#
+			,CON_VERSION= #CON_VERSION#
+			,SRC_POINT = #SRC_POINT#
+			,SRC_PIMA = #SRC_PIMA#
+			,TGT_POINT = #TGT_POINT#
+			,TGT_PIMA = #TGT_PIMA#
+			<isNotEmpty property="TGT_ROUTE">
+				,TGT_ROUTE = #TGT_ROUTE#
+			</isNotEmpty>
+			,MAWB_NO = #MAWB_NO#
+			,HAWB_NO = #HAWB_NO#
+			,CARR_CODE = #CARR_CODE#
+			,EXP_IMP_FLAG = #EXP_IMP_FLAG#
+			,TYPE_DIVICE = #TYPE_DIVICE#
+			,KAMS_AMS_FLAG = #KAMS_AMS_FLAG#
+			,EDI_INP_D = #EDI_INP_D#
+			,EDI_INP_T = #EDI_INP_T#
+			<isNotEmpty property="ORG_MSG">
+				,ORIGIN_MSG = UTL_COMPRESS.LZ_COMPRESS(#ORG_MSG:BLOB#)
+			</isNotEmpty>
+			<isNotEmpty property="CONV_MSG">
+				,CONV_MSG = UTL_COMPRESS.LZ_COMPRESS(#CONV_MSG:BLOB#)
+			</isNotEmpty>
+			<isNotEmpty property="MULTI_MSG">
+				,MULTI_MSG = UTL_COMPRESS.LZ_COMPRESS(#MULTI_MSG:BLOB#)
+			</isNotEmpty>
+			<isNotEmpty property="AMS_ACK">
+				,AMS_ACK = UTL_COMPRESS.LZ_COMPRESS(#AMS_ACK:BLOB#)
+			</isNotEmpty>
+			<isNotEmpty property="MSB_ACK">
+				,MSB_ACK = UTL_COMPRESS.LZ_COMPRESS(#MSB_ACK:BLOB#)
+			</isNotEmpty>
+			<isNotEmpty property="AIR_ACK">
+				,AIR_ACK = UTL_COMPRESS.LZ_COMPRESS(#AIR_ACK:BLOB#)
+			</isNotEmpty>
+			<isNotEmpty property="KAMS_ACK">
+				,KAMS_ACK = UTL_COMPRESS.LZ_COMPRESS(#KAMS_ACK:BLOB#)
+			</isNotEmpty>
+			<isNotEmpty property="TYPEB">
+				,TYPEB_MSG = UTL_COMPRESS.LZ_COMPRESS(#TYPEB:BLOB#)
+			</isNotEmpty>
+			<isNotEmpty property="KTNET_FHL">
+				,KTNET_MSG = UTL_COMPRESS.LZ_COMPRESS(#KTNET_FHL:BLOB#)
+			</isNotEmpty>
+			<isNotEmpty property="KTNET_MANIFEST_FHL">
+				,KTNET_MANIFEST_MSG = UTL_COMPRESS.LZ_COMPRESS(#KTNET_MANIFEST_FHL:BLOB#)
+			</isNotEmpty>
+			<isNotEmpty property="KCNET_MANIFEST_FHL">
+				,KCNET_MANIFEST_MSG = UTL_COMPRESS.LZ_COMPRESS(#KCNET_MANIFEST_FHL:BLOB#)
+			</isNotEmpty>
+			,FLT_NO = #FLT_NO#
+			,FLT_DATE = #FLT_DATE#
+			,DEP = #DEP#
+			,ARR = #ARR#
+			,ORG = #ORG#
+			,DST = #DST#
+			,CSTM_COD_C_3 = #CSTM_COD_C_3#
+			,CSTM_COD_C = #CSTM_COD_C#
+			,UPT_INP_D = TO_CHAR(SYSDATE, 'yyyyMMdd')
+			,UPT_INP_T = TO_CHAR(SYSDATE, 'hh24Miss')
+			<isNotEmpty property="AMS_SMI">
+				,AMS_SMI = #AMS_SMI#
+			</isNotEmpty>
+			<isNotEmpty property="IKAMS_SMI">
+				,IKAMS_SMI = #IKAMS_SMI#
+			</isNotEmpty>
+			<isEqual property="AMS_SMI" compareValue="FNA">
+			,EFREGIT_DONE_YN = 'N'
+			</isEqual>
+			<isEqual property="REPROC" compareValue="Y">
+			,REPROC = 'Y'
+			</isEqual>
+			<isNotEmpty property="ERRORMSG">
+				,ERRORMSG = #ERRORMSG#
+			</isNotEmpty>
+			<isNotEmpty property="ERRORMSG_KOR">
+				,ERRORMSG_KOR = #ERRORMSG_KOR#
+			</isNotEmpty>
+			<isNotEmpty property="IKAMS_ERRMSG">
+				,IKAMS_ERRMSG = #IKAMS_ERRMSG#
+			</isNotEmpty>
+			<isNotEmpty property="IKAMS_ERRMSG_KOR">
+				,IKAMS_ERRMSG_KOR = #IKAMS_ERRMSG_KOR#
+			</isNotEmpty>
+			<isNotEmpty property="OUT_AMS_FLAG">
+				,OUT_AMS_FLAG = #OUT_AMS_FLAG#
+			</isNotEmpty>
+			<isNotEmpty property="OUT_KAMS_FLAG">
+				,OUT_KAMS_FLAG = #OUT_KAMS_FLAG#
+			</isNotEmpty>
+		WHERE TRX_ROUTE = #AMS_TRX_ROUTE#
+	</update>
+
+	<update id="UpdateTgtPoint" parameterClass="map">
+		UPDATE TM_TRACE
+		SET
+			TGT_POINT = #TGT_POINT#
+			,IKAMS_POINT = #IKAMS_POINT#
+			,ROUTE_POINT = #ROUTE_POINT#
+			,IKAMS_ROUTE_POINT = #IKAMS_ROUTE_POINT#
+		WHERE TRX_ROUTE = #AMS_TRX_ROUTE#
+	</update>
+
+	<update id="insertFHL" parameterClass="map">
+		INSERT INTO TM_FHL
+		(
+			TRX_ROUTE
+			,COMPANYCODE
+			,SEND_COMP
+			,REV_RUT_KEY
+			,STANDARDMESSAGEIDENTIFICATION
+			,MESSAGETYPEVERSIONNUMBER
+			,AIRLINEPREFIX
+			,AWBSERIALNUMBER
+			,AIRPORTCITYCODE_ORG
+			,AIRPORTCITYCODE_DES
+			,SHIPMENTDESCRIPTIONCODE
+			,NUMBEROFPIECES
+			,WEIGHTCODE
+			,WEIGHT
+			,HS_HWBSERIALNUMBER
+			,HS_AIRPORTCITYCODE_DEP
+			,HS_AIRPORTCITYCODE_DES
+			,HS_NUMBEROFPIECES
+			,HS_WEIGHTCODE
+			,HS_WEIGHT
+			,HS_MANIFESTDESCRIPTIONOFGOODS
+			,SLAC
+			,HS_SPECIALHANDLINGCODE1
+			,HS_SPECIALHANDLINGCODE2
+			,HS_SPECIALHANDLINGCODE3
+			,HS_SPECIALHANDLINGCODE4
+			,HS_SPECIALHANDLINGCODE5
+			,HS_SPECIALHANDLINGCODE6
+			,HS_SPECIALHANDLINGCODE7
+			,HS_SPECIALHANDLINGCODE8
+			,HS_SPECIALHANDLINGCODE9
+			,GS_FREETEXT
+			,GS_FREETEXT1
+			,GS_FREETEXT2
+			,GS_FREETEXT3
+			,GS_FREETEXT4
+			,GS_FREETEXT5
+			,GS_FREETEXT6
+			,GS_FREETEXT7
+			,GS_FREETEXT8
+			,GS_FREETEXT9
+			,GS_FREETEXT10
+			,GS_FREETEXT11
+			,GS_FREETEXT12
+			,GS_FREETEXT13
+			,GS_FREETEXT14
+			,GS_FREETEXT15
+			,GS_FREETEXT16
+			,GS_FREETEXT17
+			,GS_FREETEXT18
+			,HARMONISED
+			,HARMONISED1
+			,HARMONISED2
+			,HARMONISED3
+			,HARMONISED4
+			,HARMONISED5
+			,HARMONISED6
+			,HARMONISED7
+			,HARMONISED8
+			,SH_NAME
+			,SH_STREETADDRESS
+			,SH_PLACE
+			,SH_STATEPROVINCE
+			,SH_ISOCOUNTRYCODE
+			,SH_POSTCODE
+			,SH_CONTACTIDENTIFIER
+			,SH_CONTACTNUMBER
+			,SH_CONTACTIDENTIFIER1
+			,SH_CONTACTNUMBER1
+			,CN_NAME
+			,CN_STREETADDRESS
+			,CN_PLACE
+			,CN_STATEPROVINCE
+			,CN_ISOCOUNTRYCODE
+			,CN_POSTCODE
+			,CN_CONTACTIDENTIFIER
+			,CN_CONTACTNUMBER
+			,CN_CONTACTIDENTIFIER1
+			,CN_CONTACTNUMBER1
+			,CH_ISOCURRENCYCODE
+			,CH_CHARGEDECLARATIONS
+			,CH_CARRIAGEDECLARATIONS
+			,CH_CUSTOMSDECLARATION
+			,CH_INSURANCEDECLARATION
+			,CU_FLIGHTDATE
+			,CU_AIRLINECODE
+			,CU_FLIGHTNUMBER
+			,CU_DECONSOLCODE
+			,CU_DECONSOLNAME
+			,CU_LOCATION1
+			,CU_LOCATION2
+<!-- 			,OCI_SEQ
+			,OCI_ISO_CODE
+			,OCI_INFO_ID
+			,OCI_CUS_INFO_ID
+			,OCI_CUS_ORG_CODE
+			,OCI_SUP_INFO1
+			,OCI_CARGO_TYPE
+			,OCI_HSN
+			,OCI_GOODSCODE -->
+		)
+		VALUES(
+			#TRX_ROUTE#
+			,#COMPANYCODE#
+			,#SEND_COMP#
+			,#REV_RUT_KEY#
+			,#STANDARDMESSAGEIDENTIFICATION#
+			,#MESSAGETYPEVERSIONNUMBER#
+			,#AIRLINEPREFIX#
+			,#AWBSERIALNUMBER#
+			,#AIRPORTCITYCODE_ORG#
+			,#AIRPORTCITYCODE_DES#
+			,#SHIPMENTDESCRIPTIONCODE#
+			,#NUMBEROFPIECES#
+			,#WEIGHTCODE#
+			,#WEIGHT#
+			,#HS_HWBSERIALNUMBER#
+			,#HS_AIRPORTCITYCODE_DEP#
+			,#HS_AIRPORTCITYCODE_DES#
+			,#HS_NUMBEROFPIECES#
+			,#HS_WEIGHTCODE#
+			,#HS_WEIGHT#
+			,#HS_MANIFESTDESCRIPTIONOFGOODS#
+			,#SLAC#
+			,#HS_SPECIALHANDLINGCODE1#
+			,#HS_SPECIALHANDLINGCODE2#
+			,#HS_SPECIALHANDLINGCODE3#
+			,#HS_SPECIALHANDLINGCODE4#
+			,#HS_SPECIALHANDLINGCODE5#
+			,#HS_SPECIALHANDLINGCODE6#
+			,#HS_SPECIALHANDLINGCODE7#
+			,#HS_SPECIALHANDLINGCODE8#
+			,#HS_SPECIALHANDLINGCODE9#
+			,#GS_FREETEXT#
+			,#GS_FREETEXT1#
+			,#GS_FREETEXT2#
+			,#GS_FREETEXT3#
+			,#GS_FREETEXT4#
+			,#GS_FREETEXT5#
+			,#GS_FREETEXT6#
+			,#GS_FREETEXT7#
+			,#GS_FREETEXT8#
+			,#GS_FREETEXT9#
+			,#GS_FREETEXT10#
+			,#GS_FREETEXT11#
+			,#GS_FREETEXT12#
+			,#GS_FREETEXT13#
+			,#GS_FREETEXT14#
+			,#GS_FREETEXT15#
+			,#GS_FREETEXT16#
+			,#GS_FREETEXT17#
+			,#GS_FREETEXT18#
+			,#HARMONISED#
+			,#HARMONISED1#
+			,#HARMONISED2#
+			,#HARMONISED3#
+			,#HARMONISED4#
+			,#HARMONISED5#
+			,#HARMONISED6#
+			,#HARMONISED7#
+			,#HARMONISED8#
+			,#SH_NAME#
+			,#SH_STREETADDRESS#
+			,#SH_PLACE#
+			,#SH_STATEPROVINCE#
+			,#SH_ISOCOUNTRYCODE#
+			,#SH_POSTCODE#
+			,#SH_CONTACTIDENTIFIER#
+			,#SH_CONTACTNUMBER#
+			,#SH_CONTACTIDENTIFIER1#
+			,#SH_CONTACTNUMBER1#
+			,#CN_NAME#
+			,#CN_STREETADDRESS#
+			,#CN_PLACE#
+			,#CN_STATEPROVINCE#
+			,#CN_ISOCOUNTRYCODE#
+			,#CN_POSTCODE#
+			,#CN_CONTACTIDENTIFIER#
+			,#CN_CONTACTNUMBER#
+			,#CN_CONTACTIDENTIFIER1#
+			,#CN_CONTACTNUMBER1#
+			,#CH_ISOCURRENCYCODE#
+			,#CH_CHARGEDECLARATIONS#
+			,#CH_CARRIAGEDECLARATIONS#
+			,#CH_CUSTOMSDECLARATION#
+			,#CH_INSURANCEDECLARATION#
+			,#CU_FLIGHTDATE#
+			,#CU_AIRLINECODE#
+			,#CU_FLIGHTNUMBER#
+			,#CU_DECONSOLCODE#
+			,#CU_DECONSOLNAME#
+			,#CU_LOCATION1#
+			,#CU_LOCATION2#
+<!-- 			,#OCI_SEQ#
+			,#OCI_ISO_CODE#
+			,#OCI_INFO_ID#
+			,#OCI_CUS_INFO_ID#
+			,#OCI_CUS_ORG_CODE#
+			,#OCI_SUP_INFO1#
+			,#OCI_CARGO_TYPE#
+			,#OCI_HSN#
+			,#OCI_GOODSCODE# -->
+		)
+	</update>
+
+	<update id="insertFHLOCI" parameterClass="map">
+		INSERT INTO TM_FHL_OCI
+		(
+			DOC_NO
+			,SEQ
+			,AIRLINE_CODE
+			,OCI_ISO_CODE
+			,OCI_INFO_ID
+			,OCI_CUS_INFO_ID
+			,OCI_CUS_ORG_CODE
+			,OCI_SUP_INFO1
+			,OCI_SUP_INFO2
+			,OCI_EPN_NO
+			,OCI_EPN_PC
+			,OCI_EPN_WT
+			,OCI_EPN_SPACK_CODE
+			,OCI_EPN_SPACK_PC
+			,OCI_EPN_SPLIT_YN
+			,OCI_EPN_SPLIT_SEQ
+			,OCI_CARGO_TYPE
+			,OCI_HSN
+			,OCI_GOODSCODE
+			,TRX_ROUTE
+			,SHIPPER_TARE
+		)
+		VALUES(
+			#DOC_NO#
+			,#OCI_SEQ#
+			,#TGT_PIMA#
+			,#OCI_ISO_CODE#
+			,#OCI_INFO_ID#
+			,#OCI_CUS_INFO_ID#
+			,#OCI_CUS_ORG_CODE#
+			,#OCI_SUP_INFO1#
+			,#OCI_SUP_INFO2#
+			,#OCI_EPN_NO#
+			,#OCI_EPN_PC#
+			,#OCI_EPN_WT#
+			,#OCI_EPN_SPACK_CODE#
+			,#OCI_EPN_SPACK_PC#
+			,#OCI_EPN_SPLIT_YN#
+			,#OCI_EPN_SPLIT_SEQ#
+			,#OCI_CARGO_TYPE#
+			,#OCI_HSN#
+			,#OCI_GOODSCODE#
+			,#TRX_ROUTE#
+			,#SHIPPER_TARE#
+		)
+	</update>
+
+	<!-- 20241105 FHL CIMP INSERT -->
+	<update id="insertOCIETC" parameterClass="map">
+		INSERT INTO TM_FHL_OCI_CIMP
+		(
+			TRX_ROUTE
+			,MAWB_NO
+			,HAWB_NO
+			,SEQ
+			,OCI_ISO_CODE
+			,OCI_INFO_ID
+			,OCI_CUS_INFO_ID
+			,OCI_SUP_INFO
+		)
+		VALUES(
+			#TRX_ROUTE#
+			,#MAWB_NO#
+			,#HAWB_NO#
+			,#OCI_ETC_SEQ#
+			,#OCI_ETC_ISO_CODE#
+			,#OCI_ETC_INFO_ID#
+			,#OCI_ETC_CUS_INFO_ID#
+			,#OCI_ETC_SUP_INFO#
+		)
+	</update>
+
+	<update id="insertOCICN" parameterClass="map">
+		INSERT INTO TM_FHL_OCI_CN
+		(
+			TRX_ROUTE
+			,MAWB_NO
+			,HAWB_NO
+			,OCI_SHP_T_CN
+			,OCI_SHP_T_CODE
+			,OCI_SHP_T_NUM
+			,OCI_SHP_KC_CN
+			,OCI_SHP_KC_CODE
+			,OCI_SHP_KC_PERSON
+			,OCI_SHP_U_CN
+			,OCI_SHP_U_CODE
+			,OCI_SHP_U_NUM
+			,OCI_SHP_E_CN
+			,OCI_SHP_E_CODE
+			,OCI_SHP_E_NUM
+			,OCI_CNE_T_CN
+			,OCI_CNE_T_CODE
+			,OCI_CNE_T_NUM
+			,OCI_CNE_KC_CN
+			,OCI_CNE_KC_CODE
+			,OCI_CNE_KC_PERSON
+			,OCI_CNE_U_CN
+			,OCI_CNE_U_CODE
+			,OCI_CNE_U_NUM
+			,OCI_CNE_E_CN
+			,OCI_CNE_E_CODE
+			,OCI_CNE_E_NUM
+			,OCI_NFY_T_CN
+			,OCI_NFY_T_CODE
+			,OCI_NFY_T_NUM
+			,OCI_NFY_KC_CN
+			,OCI_NFY_KC_CODE
+			,OCI_NFY_KC_PERSON
+			,OCI_NFY_U_CN
+			,OCI_NFY_U_CODE
+			,OCI_NFY_U_NUM
+			,OCI_NFY_E_CN
+			,OCI_NFY_E_CODE
+			,OCI_NFY_E_NUM
+		)
+		VALUES(
+			#TRX_ROUTE#
+			,#MAWB_NO#
+			,#HAWB_NO#
+			,#OCI_SHP_T_CN#
+			,#OCI_SHP_T_FLAG#
+			,#OCI_SHP_T_NUM#
+			,#OCI_SHP_KC_CN#
+			,#OCI_SHP_KC_FLAG#
+			,#OCI_SHP_KC_PERSON#
+			,#OCI_SHP_U_CN#
+			,#OCI_SHP_U_FLAG#
+			,#OCI_SHP_U_NUM#
+			,#OCI_SHP_E_CN#
+			,#OCI_SHP_E_FLAG#
+			,#OCI_SHP_E_NUM#
+			,#OCI_CNE_T_CN#
+			,#OCI_CNE_T_FLAG#
+			,#OCI_CNE_T_NUM#
+			,#OCI_CNE_KC_CN#
+			,#OCI_CNE_KC_FLAG#
+			,#OCI_CNE_KC_PERSON#
+			,#OCI_CNE_U_CN#
+			,#OCI_CNE_U_FLAG#
+			,#OCI_CNE_U_NUM#
+			,#OCI_CNE_E_CN#
+			,#OCI_CNE_E_FLAG#
+			,#OCI_CNE_E_NUM#
+			,#OCI_NFY_T_CN#
+			,#OCI_NFY_T_FLAG#
+			,#OCI_NFY_T_NUM#
+			,#OCI_NFY_KC_CN#
+			,#OCI_NFY_KC_FLAG#
+			,#OCI_NFY_KC_PERSON#
+			,#OCI_NFY_U_CN#
+			,#OCI_NFY_U_FLAG#
+			,#OCI_NFY_U_NUM#
+			,#OCI_NFY_E_CN#
+			,#OCI_NFY_E_FLAG#
+			,#OCI_NFY_E_NUM#
+		)
+	</update>
+	<update id="ACKUpdateTrace" parameterClass="map">
+		UPDATE TM_TRACE
+		SET
+			UPT_INP_D = TO_CHAR(SYSDATE, 'yyyyMMdd')
+			,UPT_INP_T = TO_CHAR(SYSDATE, 'hh24Miss')
+			<isNotEmpty property="AMS_ACK">
+				,AMS_ACK = UTL_COMPRESS.LZ_COMPRESS(#AMS_ACK:BLOB#)
+			</isNotEmpty>
+			<isNotEmpty property="MSB_ACK">
+				,MSB_ACK = UTL_COMPRESS.LZ_COMPRESS(#MSB_ACK:BLOB#)
+			</isNotEmpty>
+			<isNotEmpty property="KE_AIR_ACK">
+				,KE_AIR_ACK = UTL_COMPRESS.LZ_COMPRESS(#KE_AIR_ACK:BLOB#)
+			</isNotEmpty>
+			<isNotEmpty property="OAL_AIR_ACK">
+				,OAL_AIR_ACK = UTL_COMPRESS.LZ_COMPRESS(#OAL_AIR_ACK:BLOB#)
+			</isNotEmpty>
+			<isNotEmpty property="KAMS_ACK">
+				,KAMS_ACK = UTL_COMPRESS.LZ_COMPRESS(#KAMS_ACK:BLOB#)
+			</isNotEmpty>
+			<isNotEmpty property="KTNET_ACK">
+				,KTNET_ACK = UTL_COMPRESS.LZ_COMPRESS(#KTNET_ACK:BLOB#)
+			</isNotEmpty>
+			<isNotEmpty property="KTNET_MFCS_ACK">
+				,KTNET_MFCS_ACK = UTL_COMPRESS.LZ_COMPRESS(#KTNET_MFCS_ACK:BLOB#)
+			</isNotEmpty>
+			<isNotEmpty property="KTNET_AIR_ACK">
+				,KTNET_AIR_ACK = UTL_COMPRESS.LZ_COMPRESS(#KTNET_AIR_ACK:BLOB#)
+			</isNotEmpty>
+			<isNotEmpty property="KTNET_FHL_ACK">
+				,KTNET_FHL_ACK = UTL_COMPRESS.LZ_COMPRESS(#KTNET_FHL_ACK:BLOB#)
+			</isNotEmpty>
+			<isNotEmpty property="KTNET_AMS_ACK">
+				,KTNET_AMS_ACK = UTL_COMPRESS.LZ_COMPRESS(#KTNET_AMS_ACK:BLOB#)
+			</isNotEmpty>
+			<isNotEmpty property="KCNET_ACPS_ACK">
+				,KCNET_ACPS_ACK = UTL_COMPRESS.LZ_COMPRESS(#KCNET_ACPS_ACK:BLOB#)
+			</isNotEmpty>
+			<isNotEmpty property="KCNET_MFCS_ACK">
+				,KCNET_MFCS_ACK = UTL_COMPRESS.LZ_COMPRESS(#KCNET_MFCS_ACK:BLOB#)
+			</isNotEmpty>
+			<isNotEmpty property="KT_ACK_STATUS">
+				,KT_ACK_STATUS = #KT_ACK_STATUS#
+			</isNotEmpty>
+			<isNotEmpty property="KT_MFCS_STATUS">
+				,KT_MFCS_STATUS = #KT_MFCS_STATUS#
+			</isNotEmpty>
+			<isNotEmpty property="KT_AIR_STATUS">
+				,KT_AIR_STATUS = #KT_AIR_STATUS#
+			</isNotEmpty>
+			<isNotEmpty property="KT_FHL_STATUS">
+				,KT_FHL_STATUS = #KT_FHL_STATUS#
+			</isNotEmpty>
+			<isNotEmpty property="KT_AMS_STATUS">
+				,KT_AMS_STATUS = #KT_AMS_STATUS#
+			</isNotEmpty>
+			<isNotEmpty property="KC_MFCS_STATUS">
+				,KC_MFCS_STATUS = #KC_MFCS_STATUS#
+			</isNotEmpty>
+			<isNotEmpty property="KC_ACPS_STATUS">
+				,KC_ACPS_STATUS = #KC_ACPS_STATUS#
+			</isNotEmpty>
+			<isNotEmpty property="AMS_SMI">
+				,AMS_SMI = #AMS_SMI#
+			</isNotEmpty>
+			<isEqual property="AMS_SMI" compareValue="FNA">
+				,EFREGIT_DONE_YN = 'N'
+			</isEqual>
+			<isNotEmpty property="MSB_SMI">
+				,MSB_SMI = #MSB_SMI#
+			</isNotEmpty>
+			<isNotEmpty property="AIR_SMI">
+				,AIR_SMI = #AIR_SMI#
+			</isNotEmpty>
+			<isNotEmpty property="OAL_AIR_SMI">
+				,OAL_AIR_SMI = #OAL_AIR_SMI#
+			</isNotEmpty>
+			<isNotEmpty property="IKAMS_SMI">
+				,IKAMS_SMI = #IKAMS_SMI#
+			</isNotEmpty>
+			<isNotEmpty property="IKAMS_ERRMSG">
+				,IKAMS_ERRMSG = #IKAMS_ERRMSG#
+			</isNotEmpty>
+			<isNotEmpty property="IKAMS_ERRMSG_KOR">
+				,IKAMS_ERRMSG_KOR = #IKAMS_ERRMSG_KOR#
+			</isNotEmpty>
+			<isNotEmpty property="ACK_DESCRIPTION">
+				,ERRORMSG = #ACK_DESCRIPTION#
+			</isNotEmpty>
+		WHERE TRX_ROUTE = #AMS_TRX_ROUTE#
+	</update>
+
+	<update id="insertKTTrace" parameterClass="map">
+		INSERT INTO TM_TRACE_KTNET
+		(
+			 KTNET_ROUTE
+			,DIVISION_MSG
+
+		)VALUES(
+			#KTNET_ROUTE#
+			  <isNotEmpty property="DIVISION_MSG">
+				,UTL_COMPRESS.LZ_COMPRESS(#DIVISION_MSG:BLOB#)
+			</isNotEmpty>
+		)
+	</update>
+
+	<update id="updateKTTrace" parameterClass="map">
+		UPDATE
+		TM_TRACE_KTNET
+		SET DONE_FLAG = 'Y'
+		WHERE KTNET_ROUTE=#KTNET_ROUTE#
+	</update>
+
+	<update id="insertEXPhawb" parameterClass="map">
+		INSERT INTO IF_TX_EXP_HAWB
+		(
+		    FLT_D
+			,CARR_C
+			,FLT_##
+			,MAWB_##
+			,HAWB_##
+			,CGO_TYP_C
+			,M_PC_Q
+			,M_WT_M
+			,H_PC_Q
+			,H_WT_M
+			,SLAC
+			,CMOD_N
+			,DTL_CMOD_N
+			,SHPR_N
+			,SHPR_ADDR_N
+			,SHPR_TEL_N
+			,CNEE_N
+			,CNEE_ADDR_N
+			,CNEE_TEL_N
+			,EPN_CNT_Q
+			,CSTM_COD_C
+			,MSG_CTRL_ID
+			,H_ORG
+			,H_DST
+			,M_ORG
+			,M_DST
+			,SENDER_PIMA
+			,ORG_MSG
+			,DONE_YN
+			,SHPR_CITY_C
+			,CNEE_CITY_C
+			,SENDER_ID
+		)
+		VALUES(
+		    #FLT#
+			,#CARR_CODE#
+			,#FLT_NUM#
+			,#MBI_NO#
+			,#HBS_NO#
+			,#OCI_CARGO_TYPE#
+			,#M_PC#
+			,#M_WT#
+			,#H_PC#
+			,#H_WT#
+			,#H_SLAC#
+			,#H_COMMODITY#
+			,#TXT_COMODITY#
+			,#SHP_NAME#
+			,#SHP_FULL_ADDR#
+			,#SHP_CONTACTNUMBER#
+			,#CNE_NAME#
+			,#CNE_FULL_ADDR#
+			,#CNE_CONTACTNUMBER#
+			,#OCI_SEQ#
+			,#FLT_DECONSOL#
+			,#AMS_TRX_ROUTE#
+			,#H_ORG#
+			,#H_DST#
+			,#M_ORG#
+			,#M_DST#
+			,#SRC_PIMA#
+			<isNotEmpty property="EDI">
+				,UTL_COMPRESS.LZ_COMPRESS(#EDI:BLOB#)
+			</isNotEmpty>
+			,#DONE_YN#
+			,#SHPR_CITY_C#
+			,#CNEE_CITY_C#
+			,#SENDER_ID#
+	)
+	</update>
+
+	<update id="insertEXPEpn" parameterClass="map">
+		INSERT INTO IF_TX_EXP_EPN
+		(
+		    FLT_D
+			,CARR_C
+			,FLT_##
+			,MAWB_##
+			,HAWB_##
+			,CSTM_COD_C
+			,DEPARTURECONVEYANCEFACILITY
+			,GOODSLOCATION
+			,CGO_TYP_C
+			,EPN_CNT_Q
+			,EPN_##
+			,PC_Q
+			,WT_M
+			,SAMETIMEPACK_C
+			,SAMETIMEPACK_CNT_Q
+			,PTL_C
+			,PTL_CNT_N1
+			,MSG_CTRL_ID
+			,DONE_YN
+			,SHIPPER_TARE
+			,EPN_ERR_YN
+			,EPN_CHK_MSG
+		)
+		VALUES(
+		    #FLT#
+			,#CARR_CODE#
+			,#FLT_NUM#
+			,#MBI_NO#
+			,#HBS_NO#
+			,#FLT_DECONSOL#
+			,#FLT_LOCATION1#
+			,#FLT_LOCATION2#
+			,#OCI_CARGO_TYPE#
+			,#OCI_SEQ#
+			,#OCI_EPN_NO#
+			,#OCI_EPN_PC#
+			,#OCI_EPN_WT#
+			,#OCI_EPN_SPACK_CODE#
+			,#OCI_EPN_SPACK_PC#
+			,#OCI_EPN_SPLIT_YN#
+			,#OCI_EPN_SPLIT_SEQ#
+			,#AMS_TRX_ROUTE#
+			,#DONE_YN#
+			,#SHIPPER_TARE#
+			,#EPN_ERR_YN#
+			,#EPN_CHK_MSG#
+	)
+	</update>
+
+	<update id="insertIMPhawb" parameterClass="map">
+		INSERT INTO IF_TX_IMP_HAWB
+		(
+		    FLT_D
+			,CARR_C
+			,FLT_##
+			,MAWB_##
+			,HAWB_##
+			,CGO_TYP_C
+			,M_PC_Q
+			,M_WT_M
+			,H_PC_Q
+			,H_WT_M
+			,SLAC
+			,CMOD_N
+			,DTL_CMOD_N
+			,SHPR_N
+			,SHPR_ADDR_N
+			,SHPR_TEL_N
+			,CNEE_N
+			,CNEE_ADDR_N
+			,CNEE_TEL_N
+			,CSTM_COD_C
+			,H_ORG
+			,H_DST
+			,FWDR_N
+			,UN_LOAD_C
+			,WH_LOC_C
+			,GOODSCODE
+			,DOC_TYPE
+			,SENDER_PIMA
+			,MSG_TYPE
+			,HSN_##
+			,MSG_CTRL_ID
+			,M_ORG
+			,M_DST
+			<isNotEqual property="FLT_DECONSOL" compareValue="XXXX">
+			,FWDR_C
+			</isNotEqual>
+			,ORG_MSG
+			,GOOD_STS_CODE
+			,DONE_YN
+			,SHPR_CITY_C
+			,CNEE_CITY_C
+			<!-- ,SENDER_ID -->
+			<!-- ,KAMS_UPDT_YN -->
+		)
+		VALUES(
+		    #FLT#
+		    ,#CARR_CODE#
+		    ,#FLT_NUM#
+		    ,#MBI_NO#
+			,#HBS_NO#
+			,#OCI_CARGO_TYPE#
+			,#M_PC#
+			,#M_WT#
+			,#H_PC#
+			,#H_WT#
+			,#H_SLAC#
+			,#H_COMMODITY#
+			,#TXT_COMODITY#
+			,#SHP_NAME#
+			,#SHP_FULL_ADDR#
+			,#SHP_CONTACTNUMBER#
+			,#CNE_NAME#
+			,#CNE_FULL_ADDR#
+			,#CNE_CONTACTNUMBER#
+			,#FLT_DECONSOL#
+			,#H_ORG#
+			,#H_DST#
+			,#DECONSOL_NAME#
+			,#FLT_LOCATION1#
+			,#FLT_LOCATION2#
+			,#OCI_GOODSCODE#
+			,#SMI#
+			,#SRC_PIMA#
+			,#OCI_FLAG#
+			,#OCI_HSN#
+			,#AMS_TRX_ROUTE#
+			,#M_ORG#
+			,#M_DST#
+			<isNotEqual property="FLT_DECONSOL" compareValue="XXXX">
+				,#FLT_DECONSOL#
+			</isNotEqual>
+			<isNotEmpty property="EDI">
+				,UTL_COMPRESS.LZ_COMPRESS(#EDI:BLOB#)
+			</isNotEmpty>
+			,#OCI_GOOD_STS_CODE#
+			,#DONE_YN#
+			,#SHPR_CITY_C#
+			,#CNEE_CITY_C#
+			<!-- ,#SENDER_ID# -->
+			<!-- ,#KAMS_UPDT_YN# -->
+	)
+	</update>
+
+	<update id="IKAMSExpFlagUpdateTrace" parameterClass="map">
+		UPDATE
+		IF_TX_EXP_HAWB_SUCCESS_FLAG
+		SET
+		DONE_YN = 'Y'
+		WHERE MSG_CTRL_ID = #MSG_CTRL_ID#
+	</update>
+
+	<update id="IKAMSImpFlagUpdateTrace" parameterClass="map">
+		UPDATE
+		IF_TX_IMP_HAWB_SUCCESS_FLAG
+		SET
+		DONE_YN = 'Y'
+		WHERE MSG_CTRL_ID = #MSG_CTRL_ID#
+	</update>
+
+</sqlMap>

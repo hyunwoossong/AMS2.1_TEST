@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMapConfig PUBLIC "-//ibatis.apache.org//DTD SQL Map Config 2.0//EN"
+    "http://ibatis.apache.org/dtd/sql-map-config-2.dtd">
+
+<sqlMapConfig>
+	<!-- cacheModelsEnabled="true" : preparedStatment 재사용
+		 enhancementEnabled="true" : 성능개선
+		 lazyLoadingEnabled="true" : 효율성 높이기위한, 캐시사용  -->
+	<settings cacheModelsEnabled="true" enhancementEnabled="true" lazyLoadingEnabled="true"
+		useStatementNamespaces="true" />
+	<!--
+	[B = 자바 시그니처
+	 -->
+	<typeHandler javaType="[B" jdbcType="BLOB" callback="com.trx.ibatis.support.BlobTypeHandlerCallback" />
+
+	<typeHandler javaType="java.lang.String" jdbcType="clob" callback="com.trx.ibatis.support.ClobTypeHandlerCallback" />
+
+	<sqlMap resource="dummy.xml" />
+
+</sqlMapConfig>

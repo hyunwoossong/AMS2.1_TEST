@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="euc-kr" ?>
+<properties>
+	<comment>ETL Framework Properties</comment>
+
+	<!--  Info Message -->
+	<entry key="fma.ackmessage"><![CDATA[0000:::MESSAGE SENT OK]]></entry>
+	
+	<!--  Error Message  -->
+	<entry key="system.exception"><![CDATA[9999:::SYSTEM ERROR - {0}]]></entry>
+
+	<entry key="receive.sendmessage.exception">1000:::NO REQUEST MESSAGE</entry>
+	<entry key="receive.ackmessage.exception">1001:::NO ACK MESSAGE FROM AIRLINE</entry>
+	<entry key="receive.ackmessage.timeout.exception">1005:::NO ACK MESSAGE FROM AIRLINE</entry>
+	<entry key="receive.ackmessage.msb.timeout.exception">1006:::NO ACK MESSAGE FROM MSB</entry>
+
+	<entry key="send.message.exception">1010:::FAIL TO SEND {0}</entry>
+
+	<entry key="nosuch.sourceformat.exception"><![CDATA[1101:::CANNOT SUPPORT SOURCE FORMAT {0}.]]></entry>
+	<entry key="nosuch.active.version.exception"><![CDATA[1102:::{1} MESSAGE VERSION {2} IS NOT SUPPORTED FOR {0}.]]></entry>
+	<entry key="nosuch.pima.exception"><![CDATA[1103:::{0} - UNKNOWN PARTICIPANT IDENTIFIER]]></entry>
+	<entry key="nosuch.pattern.exception"><![CDATA[1104:::NO PATTERN INFO FOR {0}/{1}]]></entry>
+	<entry key="nosuch.pima.effect.exception"><![CDATA[1105:::{0} - INVALID PARTICIPANT IDENTIFIER]]></entry>
+
+
+	<entry key="validation.edifact.exception">2000:::INVALID EDI MESSAGE</entry>
+	<entry key="validation.message.header.exception"><![CDATA[2001:::SYNTAX ERROR - MESSAGE HEADER]]></entry>
+	<entry key="validation.message.edifact.exception"><![CDATA[2002:::SYNTAX ERROR - EDIFACT HEADER]]></entry>
+	<entry key="validation.message.structure.exception"><![CDATA[2003:::INVALID FORMAT - {0}]]></entry>
+
+
+	<entry key="jms.routing.receive.nullexception"><![CDATA[3000:::RECEIVE MESSAGE IS NULL.]]></entry>
+	<entry key="jms.routing.msbinfo.nullexception"><![CDATA[3010:::MSBINFO OBJECT IS NULL.]]></entry>
+	<entry key="jms.routing.sendexception"><![CDATA[3020:::CANNOT SEND OBJECT TO {0}. - {1}]]></entry>
+	<entry key="jms.routing.receiveexception"><![CDATA[3030:::CANNOT BROWSE {0} TO JMSQUEUE. - {1}\r\n SENDMESSAGE : {2}]]></entry>
+	<entry key="jms.validation.exception"><![CDATA[3040:::INVALID JMS MESSAGE - {0}]]></entry>
+	
+	<entry key="form.element.mandatoryexception"><![CDATA[{0} IS MANDATORY]]></entry>
+	<entry key="form.element.checkbyte"><![CDATA[{0} {1} BYTE LIMIT]]></entry>
+
+</properties>

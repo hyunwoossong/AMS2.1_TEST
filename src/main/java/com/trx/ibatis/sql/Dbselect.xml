@@ -1,0 +1,368 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"
+    "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="TM_TRACE">
+
+
+ <select id="selectTrace" resultClass="java.util.HashMap">
+	select * from TC_NORMALIZATION
+ </select>
+
+  <select id="ktnetTrace" resultClass="java.util.HashMap">
+	SELECT 	KTNET_ROUTE,
+			UTL_RAW.CAST_TO_VARCHAR2(UTL_COMPRESS.LZ_UNCOMPRESS(NVL(DIVISION_MSG,EMPTY_BLOB()))) as DIVISION_MSG,
+ 			INP_D,
+ 			INP_T,
+ 			GMT_D,
+ 			GMT_T
+ 	FROM TM_TRACE_KTNET
+ 	WHERE DONE_FLAG = 'N'
+ </select>
+
+ <select id="airlineCheck" resultClass="java.util.HashMap">
+	SELECT
+          CARR_CODE,
+          SMI_VERSION,
+          IMP_EXP_FLAG,
+          OCI_TYPE_FLAG,
+          MANIFEST_COMPANY,
+          KTNET_SEND_FLAG,
+          AIR_PIMA_MSB_SEND,
+          AIR_PIMA_MSB_SEND_VER,
+          CONV_MULTI_SEND,
+          IKAMS_SEND,
+          SITA_TYPEB_SEND,
+          SITA_TYPEB_SEND_VER,
+          MULTI_SEND,
+          KTNET_MANIFEST,
+          KCNET_MANIFEST,
+          ORG,
+          DST,
+          SEND_QNAME
+	FROM TC_FHL_CARR_ROUTINGLIST
+	WHERE CARR_CODE =#CARR_CODE#
+	AND ROWNUM = '1'
+	<![CDATA[
+		AND (FIRST_USE_D||FIRST_USE_T <= TO_CHAR(SYSDATE, 'yyyyMMddhh24Miss') AND LAST_USE_D||LAST_USE_T >= TO_CHAR(SYSDATE, 'yyyyMMddhh24Miss'))
+	 ]]>
+ </select>
+
+ <select id="ackRouteCheck" resultClass="java.util.HashMap">
+	SELECT
+	   	  TRX_ROUTE
+	   	  ,ORG_ROUTE
+	FROM(SELECT
+		  *
+		FROM TM_TRACE
+		<isEqual property="MSG_CTRL_ID" compareValue="TRAXONRE">
+			WHERE MAWB_NO = #MAWB_NO#
+			 <isNotEmpty property="HAWB">
+			AND HAWB_NO =#HAWB#
+			</isNotEmpty>
+			AND TYPE_DIVICE NOT IN ('I', 'X')
+			ORDER BY INP_D||INP_T DESC
+		</isEqual>
+		<isNotEqual property="MSG_CTRL_ID" compareValue="TRAXONRE">
+			WHERE TRX_ROUTE = #MSG_CTRL_ID#
+		</isNotEqual>
+	)
+	WHERE ROWNUM = '1'
+ </select>
+
+  <select id="routingCheckOrgDes" resultClass="java.lang.Integer">
+	SELECT
+         COUNT(*) AS CNT
+	FROM TC_FHL_CARR_ROUTINGLIST
+	WHERE CARR_CODE =#CARR_CODE#
+	<isEqual property="VERSION" compareValue="4">
+		AND IMP_EXP_FLAG = #OCI_TYPE#
+		AND OCI_TYPE_FLAG = #OCI_FLAG#
+	</isEqual>
+	AND (ORG IS NOT NULL OR DST IS NOT NULL)
+	<![CDATA[
+		AND (FIRST_USE_D||FIRST_USE_T <= TO_CHAR(SYSDATE, 'yyyyMMddhh24Miss') AND LAST_USE_D||LAST_USE_T >= TO_CHAR(SYSDATE, 'yyyyMMddhh24Miss'))
+	 ]]>
+ </select>
+
+ <select id="webRoutingCheck" resultClass="java.util.HashMap">
+	SELECT
+          CARR_CODE,
+          SMI_VERSION,
+          IMP_EXP_FLAG,
+          OCI_TYPE_FLAG,
+          MANIFEST_COMPANY,
+          DECODE(#REPROC_KT_FLAG#, 'Y', KTNET_SEND_FLAG, '') AS KTNET_SEND_FLAG,
+          DECODE(#REPROC_KT_MANIFEST#, 'Y', KTNET_MANIFEST, '') AS KTNET_MANIFEST,
+          DECODE(#REPROC_OAL_FLAG#, 'Y', AIR_PIMA_MSB_SEND, '') AS AIR_PIMA_MSB_SEND,
+          DECODE(#REPROC_OAL_VER#, 'Y', AIR_PIMA_MSB_SEND_VER, '') AS AIR_PIMA_MSB_SEND_VER,
+          DECODE(#REPROC_KE_FLAG#, 'Y', CONV_MULTI_SEND, '') AS CONV_MULTI_SEND,
+          DECODE(#REPROC_IKAMS_FLAG#,'Y',IKAMS_SEND,'') AS IKAMS_SEND,
+          DECODE(#REPROC_TYPEB_FLAG#, 'Y', SITA_TYPEB_SEND, '') AS SITA_TYPEB_SEND,
+          DECODE(#REPROC_TYPEB_VER#, 'Y', SITA_TYPEB_SEND_VER, '') AS SITA_TYPEB_SEND_VER,
+          DECODE(#REPROC_KC_MANIFEST#, 'Y', KCNET_MANIFEST, '') AS KCNET_MANIFEST,
+          MULTI_SEND,
+          ORG,
+          DST,
+          SEND_QNAME,
+          KTNET_SEND_FLAG AS KTNET_SEND_FLAG2,
+          KTNET_MANIFEST AS KTNET_MANIFEST2,
+          AIR_PIMA_MSB_SEND AS AIR_PIMA_MSB_SEND2,
+          AIR_PIMA_MSB_SEND_VER AS AIR_PIMA_MSB_SEND_VER2,
+          CONV_MULTI_SEND AS CONV_MULTI_SEND2,
+          IKAMS_SEND AS IKAMS_SEND2,
+          SITA_TYPEB_SEND AS SITA_TYPEB_SEND2,
+          SITA_TYPEB_SEND_VER AS SITA_TYPEB_SEND_VER2,
+          KCNET_MANIFEST AS KCNET_MANIFEST2
+	FROM TC_FHL_CARR_ROUTINGLIST
+	WHERE CARR_CODE =#CARR_CODE#
+	AND SMI_VERSION = #VERSION#
+	<isEqual property="VERSION" compareValue="4">
+		AND IMP_EXP_FLAG = #OCI_TYPE#
+		AND OCI_TYPE_FLAG = #OCI_FLAG#
+	</isEqual>
+	<isEqual property="ORG_DES_CHK" compareValue="Y">
+		AND (ORG = DECODE(#M_ORG#, 'SEL', 'ICN', #M_ORG#) OR DST = DECODE(#M_DST#, 'SEL', 'ICN', #M_DST#))
+	</isEqual>
+	<isNotEmpty property="TRANSSHIPMENT">
+		AND TRANSSHIPMENT = #TRANSSHIPMENT#
+	</isNotEmpty>
+	<![CDATA[
+		AND (FIRST_USE_D||FIRST_USE_T <= TO_CHAR(SYSDATE, 'yyyyMMddhh24Miss') AND LAST_USE_D||LAST_USE_T >= TO_CHAR(SYSDATE, 'yyyyMMddhh24Miss'))
+	 ]]>
+ </select>
+
+  <select id="routingCheck" resultClass="java.util.HashMap">
+	 SELECT
+          CARR_CODE,
+          SMI_VERSION,
+          IMP_EXP_FLAG,
+          OCI_TYPE_FLAG,
+          MANIFEST_COMPANY,
+          KTNET_SEND_FLAG,
+          KTNET_MANIFEST,
+          AIR_PIMA_MSB_SEND,
+          AIR_PIMA_MSB_SEND_VER,
+          CONV_MULTI_SEND,
+          IKAMS_SEND,
+          SITA_TYPEB_SEND,
+          SITA_TYPEB_SEND_VER,
+          KCNET_MANIFEST,
+          MULTI_SEND,
+          ORG,
+          DST,
+          SEND_QNAME,
+          KTNET_SEND_FLAG AS KTNET_SEND_FLAG2,
+          KTNET_MANIFEST AS KTNET_MANIFEST2,
+          AIR_PIMA_MSB_SEND AS AIR_PIMA_MSB_SEND2,
+          AIR_PIMA_MSB_SEND_VER AS AIR_PIMA_MSB_SEND_VER2,
+          CONV_MULTI_SEND AS CONV_MULTI_SEND2,
+          IKAMS_SEND AS IKAMS_SEND2,
+          SITA_TYPEB_SEND AS SITA_TYPEB_SEND2,
+          SITA_TYPEB_SEND_VER AS SITA_TYPEB_SEND_VER2,
+          KCNET_MANIFEST AS KCNET_MANIFEST2
+	FROM TC_FHL_CARR_ROUTINGLIST
+	WHERE CARR_CODE =#CARR_CODE#
+	AND SMI_VERSION = #VERSION#
+	<isEqual property="VERSION" compareValue="4">
+		AND IMP_EXP_FLAG = #OCI_TYPE#
+		AND OCI_TYPE_FLAG = #OCI_FLAG#
+	</isEqual>
+	<isEqual property="ORG_DES_CHK" compareValue="Y">
+		AND (ORG = DECODE(#M_ORG#, 'SEL', 'ICN', #M_ORG#) OR DST = DECODE(#M_DST#, 'SEL', 'ICN', #M_DST#))
+	</isEqual>
+	<isNotEmpty property="TRANSSHIPMENT">
+		AND TRANSSHIPMENT = #TRANSSHIPMENT#
+	</isNotEmpty>
+	<![CDATA[
+		AND (FIRST_USE_D||FIRST_USE_T <= TO_CHAR(SYSDATE, 'yyyyMMddhh24Miss') AND LAST_USE_D||LAST_USE_T >= TO_CHAR(SYSDATE, 'yyyyMMddhh24Miss'))
+	 ]]>
+ </select>
+
+ <select id="CAwebRoutingCheck" resultClass="java.util.HashMap">
+	SELECT
+          CARR_CODE,
+          SMI_VERSION,
+          IMP_EXP_FLAG,
+          OCI_TYPE_FLAG,
+          MANIFEST_COMPANY,
+          DECODE(#REPROC_KT_FLAG#, 'Y', KTNET_SEND_FLAG, '') AS KTNET_SEND_FLAG,
+          DECODE(#REPROC_KT_MANIFEST#, 'Y', KTNET_MANIFEST, '') AS KTNET_MANIFEST,
+          DECODE(#REPROC_OAL_FLAG#, 'Y', AIR_PIMA_MSB_SEND, '') AS AIR_PIMA_MSB_SEND,
+          DECODE(#REPROC_OAL_VER#, 'Y', AIR_PIMA_MSB_SEND_VER, '') AS AIR_PIMA_MSB_SEND_VER,
+          DECODE(#REPROC_KE_FLAG#, 'Y', CONV_MULTI_SEND, '') AS CONV_MULTI_SEND,
+          DECODE(#REPROC_IKAMS_FLAG#,'Y',IKAMS_SEND,'') AS IKAMS_SEND,
+          DECODE(#REPROC_TYPEB_FLAG#, 'Y', SITA_TYPEB_SEND, '') AS SITA_TYPEB_SEND,
+          DECODE(#REPROC_TYPEB_VER#, 'Y', SITA_TYPEB_SEND_VER, '') AS SITA_TYPEB_SEND_VER,
+          DECODE(#REPROC_KC_MANIFEST#, 'Y', KCNET_MANIFEST, '') AS KCNET_MANIFEST,
+          MULTI_SEND,
+          ORG,
+          DST,
+          SEND_QNAME,
+          KTNET_SEND_FLAG AS KTNET_SEND_FLAG2,
+          KTNET_MANIFEST AS KTNET_MANIFEST2,
+          AIR_PIMA_MSB_SEND AS AIR_PIMA_MSB_SEND2,
+          AIR_PIMA_MSB_SEND_VER AS AIR_PIMA_MSB_SEND_VER2,
+          CONV_MULTI_SEND AS CONV_MULTI_SEND2,
+          IKAMS_SEND AS IKAMS_SEND2,
+          SITA_TYPEB_SEND AS SITA_TYPEB_SEND2,
+          SITA_TYPEB_SEND_VER AS SITA_TYPEB_SEND_VER2,
+          KCNET_MANIFEST AS KCNET_MANIFEST2
+	FROM TC_FHL_CARR_ROUTINGLIST
+	WHERE CARR_CODE =#CARR_CODE#
+	AND SMI_VERSION = #VERSION#
+	<isEqual property="VERSION" compareValue="4">
+		AND IMP_EXP_FLAG = #OCI_TYPE#
+		AND OCI_TYPE_FLAG = #OCI_FLAG#
+	</isEqual>
+	<isEqual property="ORG_DES_CHK" compareValue="Y">
+		AND (ORG = DECODE(#M_ORG#, 'SEL', 'ICN', #M_ORG#) OR DST = DECODE(#M_DST#, 'SEL', 'ICN', #M_DST#))
+		AND TRANSSHIPMENT IS NULL
+	</isEqual>
+	<isNotEqual property="M_ORG" compareValue="FRA">
+		AND NVL(ORG,'EMTPY') != 'FRA'
+	</isNotEqual>
+	<isEqual property="M_ORG" compareValue="FRA">
+		AND ORG = #M_ORG#
+	</isEqual>
+	<isNotEmpty property="TRANSSHIPMENT">
+		AND TRANSSHIPMENT = #TRANSSHIPMENT#
+	</isNotEmpty>
+	<![CDATA[
+		AND (FIRST_USE_D||FIRST_USE_T <= TO_CHAR(SYSDATE, 'yyyyMMddhh24Miss') AND LAST_USE_D||LAST_USE_T >= TO_CHAR(SYSDATE, 'yyyyMMddhh24Miss'))
+	 ]]>
+ </select>
+
+  <select id="CAroutingCheck" resultClass="java.util.HashMap">
+	 SELECT
+          CARR_CODE,
+          SMI_VERSION,
+          IMP_EXP_FLAG,
+          OCI_TYPE_FLAG,
+          MANIFEST_COMPANY,
+          KTNET_SEND_FLAG,
+          KTNET_MANIFEST,
+          AIR_PIMA_MSB_SEND,
+          AIR_PIMA_MSB_SEND_VER,
+          CONV_MULTI_SEND,
+          IKAMS_SEND,
+          SITA_TYPEB_SEND,
+          SITA_TYPEB_SEND_VER,
+          KCNET_MANIFEST,
+          MULTI_SEND,
+          ORG,
+          DST,
+          SEND_QNAME,
+          KTNET_SEND_FLAG AS KTNET_SEND_FLAG2,
+          KTNET_MANIFEST AS KTNET_MANIFEST2,
+          AIR_PIMA_MSB_SEND AS AIR_PIMA_MSB_SEND2,
+          AIR_PIMA_MSB_SEND_VER AS AIR_PIMA_MSB_SEND_VER2,
+          CONV_MULTI_SEND AS CONV_MULTI_SEND2,
+          IKAMS_SEND AS IKAMS_SEND2,
+          SITA_TYPEB_SEND AS SITA_TYPEB_SEND2,
+          SITA_TYPEB_SEND_VER AS SITA_TYPEB_SEND_VER2,
+          KCNET_MANIFEST AS KCNET_MANIFEST2
+	FROM TC_FHL_CARR_ROUTINGLIST
+	WHERE CARR_CODE =#CARR_CODE#
+	AND SMI_VERSION = #VERSION#
+	<isEqual property="VERSION" compareValue="4">
+		AND IMP_EXP_FLAG = #OCI_TYPE#
+		AND OCI_TYPE_FLAG = #OCI_FLAG#
+	</isEqual>
+	<isEqual property="ORG_DES_CHK" compareValue="Y">
+		AND (ORG = DECODE(#M_ORG#, 'SEL', 'ICN', #M_ORG#) OR DST = DECODE(#M_DST#, 'SEL', 'ICN', #M_DST#))
+		AND TRANSSHIPMENT IS NULL
+	</isEqual>
+	<isNotEqual property="M_ORG" compareValue="FRA">
+		AND NVL(ORG,'EMTPY') != 'FRA'
+	</isNotEqual>
+	<isEqual property="M_ORG" compareValue="FRA">
+		AND ORG = #M_ORG#
+	</isEqual>
+	<isNotEmpty property="TRANSSHIPMENT">
+		AND TRANSSHIPMENT = #TRANSSHIPMENT#
+	</isNotEmpty>
+	<![CDATA[
+		AND (FIRST_USE_D||FIRST_USE_T <= TO_CHAR(SYSDATE, 'yyyyMMddhh24Miss') AND LAST_USE_D||LAST_USE_T >= TO_CHAR(SYSDATE, 'yyyyMMddhh24Miss'))
+	 ]]>
+ </select>
+
+ <select id="IkamsExpRead" resultClass="java.util.HashMap">
+	SELECT
+		A.MAWB_##  AS MAWB_NO
+		,A.HAWB_##  AS HAWB_NO
+		,A.M_ORG  AS M_ORG
+		,A.M_DST  AS M_DST
+		,A.M_PC_Q  AS M_PC_Q
+		,A.M_WT_M  AS M_WT_M
+		,A.CMOD_N  AS CMOD_N
+		,A.MSG_CTRL_ID AS MSG_CTRL_ID
+		,A.SUCCESS_FLAG  AS SUCCESS_FLAG
+		,A.SENDER_PIMA  AS SENDER_PIMA
+		,A.FAIL_MSG  AS FAIL_MSG
+		,BLOB_TO_CLOB(B.ORG_MSG) AS ORG_MSG
+	FROM IF_TX_EXP_HAWB_SUCCESS_FLAG A , IF_TX_EXP_HAWB B
+	WHERE A.MSG_CTRL_ID = B.MSG_CTRL_ID
+	AND A.DONE_YN = #IKAMS_DONE_YN#
+	ORDER BY B.MSG_CTRL_ID
+ </select>
+
+  <select id="IkamsImpRead" resultClass="java.util.HashMap">
+	SELECT
+		A.MAWB_##  AS MAWB_NO
+		,SUBSTR(A.MAWB_##,0,3) AS MAWB_PRIFIX
+		,SUBSTR(A.MAWB_##,4,11) AS MAWB_SERIAL
+		,A.HAWB_##  AS HAWB_NO
+		,A.M_ORG  AS M_ORG
+		,A.M_DST  AS M_DST
+		,B.FLT_D AS FLT
+		,A.M_PC_Q  AS M_PC_Q
+		,A.M_WT_M  AS M_WT_M
+		,A.CMOD_N  AS CMOD_N
+		,A.MSG_CTRL_ID AS MSG_CTRL_ID
+		,A.SUCCESS_FLAG  AS SUCCESS_FLAG
+		,A.KAMS_UPDT_YN AS KAMS_UPDT_YN
+		,A.WORKTYPE AS WORKTYPE
+		,A.SENDER_PIMA  AS SENDER_PIMA
+		,B.MSG_TYPE AS MSG_TYPE
+		,B.CARR_C AS CARR_C
+		,B.FLT_## AS FLT_NUM
+		,B.H_PC_Q AS H_PC_Q
+		,B.H_WT_M AS H_WT_M
+		,B.SLAC AS SLAC
+		,BLOB_TO_CLOB(B.ORG_MSG) AS ORG_MSG
+	FROM IF_TX_IMP_HAWB_SUCCESS_FLAG A , IF_TX_IMP_HAWB B
+	WHERE A.MSG_CTRL_ID = B.MSG_CTRL_ID
+	AND A.DONE_YN = #IKAMS_DONE_YN#
+	ORDER BY B.MSG_CTRL_ID
+ </select>
+
+<select id="pimacheck" resultClass="java.util.HashMap">
+	SELECT
+         PIMA
+         ,KOR_NAME
+         ,ENG_NAME
+         ,COUNTRY_CODE
+         ,CITY_CODE
+         ,PIMA_TYPE
+         ,AGT_CODE
+         ,CSTM_COD_C
+         ,IMP_ROUTE
+         ,IMP_USE_FLAG
+         ,AMS_USE_FLAG
+         ,KCNETCODE
+         ,EZC_PIMA
+	FROM TC_PIMA
+	WHERE PIMA =  #PIMA_CODE#
+ </select>
+ 
+    <select id="ezcpimachange" resultClass="java.util.HashMap">
+
+		SELECT PIMA
+		FROM TC_PIMA
+		WHERE CCS_ID = 'EFREIGHT'
+		AND EZC_PIMA = #TGT_PIMA#
+	
+ 	</select>
+
+</sqlMap>

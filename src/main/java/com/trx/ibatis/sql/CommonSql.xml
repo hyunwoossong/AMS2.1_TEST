@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"
+    "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="COMMON_SQL">
+
+	<select id="selectReverseKey" resultClass="java.lang.String">
+		SELECT
+				TO_CHAR(SYSDATE , 'YDDDHH24MISS')||SEQMSG_CTRL_ID.NEXTVAL AS MSB_OUT_REVERSE_KEY
+		  FROM  DUAL
+	</select>
+
+	<select id="selectKTNETReverseKey" resultClass="java.lang.String">
+		SELECT
+				TO_CHAR(SYSDATE , 'YDDDHH24MISS')||SEQKTNET_CTRL_ID.NEXTVAL AS KTNET_REVERSE_KEY
+		  FROM  DUAL
+	</select>
+
+	<select id="selectRegex" parameterClass="java.util.HashMap" resultClass="java.util.HashMap">
+		SELECT
+			   SMI
+			  ,VERSION
+			  ,REFER_NO
+			  ,REFER_NAME
+			  ,SORT_NO
+			  ,REGEX
+			  ,REPEATE_INFO
+	     FROM  TC_NORMALIZATION
+	    WHERE  VERSION = #VERSION#
+		  AND  SMI = #SMI#
+		  AND  USE_YN = 'Y'
+	 ORDER BY TO_NUMBER(SORT_NO)
+	</select>
+
+	<select id="selectMFCSlist" parameterClass="java.util.HashMap" resultClass="java.util.HashMap">
+		SELECT
+		        CARR_CODE
+		        ,MANIFEST_DEP
+		        ,START_DATE
+		        ,END_DATE
+		FROM TC_MFCS_FHL_CARR_LIST
+		WHERE CARR_CODE = #CARR_CODE#
+	</select>
+
+	<update id="insertException" parameterClass="map">
+		INSERT INTO TM_EXCEPTION
+		(
+			 TRX_ROUTE
+			 ,SYSTEM_NAME
+			 ,SUBJECT
+			<isNotEmpty property="ERR_MSG">
+			,ERR_MSG
+			</isNotEmpty>
+			<isNotEmpty property="ORG_MSG">
+			,ORG_MSG
+			</isNotEmpty>
+		)VALUES(
+		     #AMS_TRX_ROUTE#
+			 ,#SYSTEM_NAME#
+			 ,#SUBJECT#
+			<isNotEmpty property="ERR_MSG">
+			,UTL_COMPRESS.LZ_COMPRESS(#ERR_MSG:BLOB#)
+			</isNotEmpty>
+			<isNotEmpty property="ORG_MSG">
+			,UTL_COMPRESS.LZ_COMPRESS(#ORG_MSG:BLOB#)
+			</isNotEmpty>
+		)
+	</update>
+</sqlMap>

@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jboss-deployment-structure xmlns="urn:jboss:deployment-structure:1.2">
+	<deployment>
+		<exclusions>
+			<!-- JBoss의 불필요한 모듈 제거 -->
+			<!-- 로그 모듈 제거 -->
+			<module name="org.apache.log4j" />
+			<module name="org.apache.commons.logging" />
+			<module name="org.slf4j" />
+			<!-- JBoss standalone 기본 모듈 제거 -->
+			<module name="org.jboss.as.clustering.infinispan" />
+			<module name="org.jboss.as.connector" />
+			<!-- 배포 스캐너 유지 -->
+			<!-- <module name="org.jboss.as.deployment-scanner" /> -->
+			<module name="org.jboss.as.ee" />
+			<module name="org.jboss.as.ejb3" />
+			<module name="org.jboss.as.jaxrs" />
+			<module name="org.jboss.as.jdr" />
+			<!-- JMX 유지 -->
+			<!-- <module name="org.jboss.as.jmx" /> -->
+			<module name="org.jboss.as.jpa" />
+			<module name="org.jboss.as.jsf" />
+			<module name="org.jboss.as.logging" />
+			<module name="org.jboss.as.mail" />
+			<module name="org.jboss.as.naming" />
+			<module name="org.jboss.as.pojo" />
+			<module name="org.jboss.as.remoting" />
+			<module name="org.jboss.as.sar" />
+			<module name="org.jboss.as.security" />
+			<module name="org.jboss.as.threads" />
+			<module name="org.jboss.as.transactions" />
+			<!-- 서블릿 유지 -->
+			<!-- <module name="org.jboss.as.web" /> -->
+			<module name="org.jboss.as.webservices" />
+			<module name="org.jboss.as.weld" />
+			<module name="org.switchyard" />
+			<module name="org.jboss.as.messaging" />
+			<module name="org.modeshape" />
+		</exclusions>
+	</deployment>
+</jboss-deployment-structure>
