@@ -1,0 +1,716 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Configures the Camel Context-->
+
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:camel="http://camel.apache.org/schema/spring"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:util="http://www.springframework.org/schema/util"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://camel.apache.org/schema/spring http://camel.apache.org/schema/spring/camel-spring.xsd
+		http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-3.2.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.2.xsd">
+    <!--Spring 사용 하여 properties 사용 방법 (http://stove99.tistory.com/150 참고) -->
+    <!--propeties 외부에서 설정 값 적용 시 경로 지정  -->
+	<!-- <util:properties id="prop" location="classpath:traxon.properties"/> -->
+	<util:properties id="prop" location="file:/D:/DEAMON/AMS_MAIN/traxon.properties"/>
+<!-- <util:properties id="prop" location="file:/data/GL/Client/traxon.properties"/> -->
+	<!-- <util:properties id="prop" location="file:/C:/DEAMON/AMS_MAIN/traxon.properties"/> -->
+	<!-- <util:properties id="prop" location="file:/D:/DEAMON/TEST_DEAMON/AMS_MAIN/traxon.properties"/> -->
+	<!-- <contextroperty-placeholder location="file:/D:/DEAMON/AMS_MAIN/traxon.properties" /> -->
+	<!--  <context:property-placeholder location="classpath:traxon.properties" /> -->
+	<context:annotation-config />
+
+	<!-- AMB DB 설정 정보 -->
+	<bean id="dataSource" class="org.apache.commons.dbcp.BasicDataSource"
+		destroy-method="close">
+		<property name="driverClassName" value="oracle.jdbc.driver.OracleDriver" />
+		<!-- 개발 서버 접속 정보 -->
+		<!-- <property name="url" value="jdbc:oracle:thin:@172.16.100.12:1531:GLMSB"
+			/> <property name="username" value="TRAXON" /> <property name="password"
+			value="TRAXON41#" /> -->
+		<!-- 개발 서버 접속 정보 -->
+		<property name="url" value="#{prop['amsdb.url']}" />
+		<property name="username" value="#{prop['amsdb.id']}" />
+		<property name="password" value="#{prop['amsdb.pw']}" />
+
+		<property name="maxActive" value="10" /> <!-- connection 갯수 -->
+		<property name="initialSize" value="1" />
+		<property name="maxIdle" value="5" />
+		<property name="minIdle" value="1" />
+		<!-- <property name="validationQuery" value="SELECT 1 FROM DUAL" /> -->
+		<property name="testOnBorrow" value="false" />
+		<property name="testOnReturn" value="false" />
+		<property name="timeBetweenEvictionRunsMillis" value="10000" />
+		<property name="testWhileIdle" value="true" />
+		<property name="numTestsPerEvictionRun" value="3" />
+		<property name="minEvictableIdleTimeMillis" value="-1" />
+	</bean>
+
+	<!-- SqlMapClient -->
+	<bean id="sqlMapClient" class="org.springframework.orm.ibatis.SqlMapClientFactoryBean">
+		<property name="configLocation" value="classpath:SqlMapConfig.xml" />
+		<property name="dataSource" ref="dataSource" />
+		<property name="transactionConfigClass"
+			value="com.ibatis.sqlmap.engine.transaction.jdbc.JdbcTransactionConfig" />
+		<property name="transactionConfigProperties">
+			<props>
+				<prop key="DefaultAutoCommit">false</prop>
+				<prop key="SetAutoCommitAllowed">true</prop>
+			</props>
+		</property>
+		<property name="mappingLocations">
+			<list>
+				<value>classpath:com/trx/ibatis/sql/*.xml</value>
+			</list>
+		</property>
+	</bean>
+
+	<!-- Transaction Manager -->
+	<bean id="transactionManager"
+		class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+		<property name="dataSource" ref="dataSource" />
+	</bean>
+
+	<bean id="ibatis" class="org.apache.camel.component.ibatis.IBatisComponent">
+		<property name="sqlMapClient" ref="sqlMapClient" />
+	</bean>
+
+	<!-- MSB DB 설정 정보 -->
+	<bean id="msbdataSource" class="org.apache.commons.dbcp.BasicDataSource"
+		destroy-method="close">
+		<property name="driverClassName" value="oracle.jdbc.driver.OracleDriver" />
+		<!-- 개발 서버 접속 정보 -->
+		<!-- <property name="url" value="jdbc:oracle:thin:@172.16.100.12:1531:GLMSB"
+			/> <property name="username" value="TRAXON" /> <property name="password"
+			value="TRAXON41#" /> -->
+		<!-- 개발 서버 접속 정보 -->
+		<property name="url" value="#{prop['msbdb.url']}" />
+		<property name="username" value="#{prop['msbdb.id']}" />
+		<property name="password" value="#{prop['msbdb.pw']}" />
+
+		<property name="maxActive" value="10" /> <!-- connection 갯수 -->
+		<property name="initialSize" value="1" />
+		<property name="maxIdle" value="5" />
+		<property name="minIdle" value="1" />
+		<!-- <property name="validationQuery" value="SELECT 1 FROM DUAL" /> -->
+		<property name="testOnBorrow" value="false" />
+		<property name="testOnReturn" value="false" />
+		<property name="timeBetweenEvictionRunsMillis" value="10000" />
+		<property name="testWhileIdle" value="true" />
+		<property name="numTestsPerEvictionRun" value="3" />
+		<property name="minEvictableIdleTimeMillis" value="-1" />
+	</bean>
+
+	<!-- SqlMapClient -->
+	<bean id="sqlMapClient_msb" class="org.springframework.orm.ibatis.SqlMapClientFactoryBean">
+		<property name="configLocation" value="classpath:SqlMapConfig.xml" />
+		<property name="dataSource" ref="msbdataSource" />
+		<property name="transactionConfigClass"
+			value="com.ibatis.sqlmap.engine.transaction.jdbc.JdbcTransactionConfig" />
+		<property name="transactionConfigProperties">
+			<props>
+				<prop key="DefaultAutoCommit">false</prop>
+				<prop key="SetAutoCommitAllowed">true</prop>
+			</props>
+		</property>
+		<property name="mappingLocations">
+			<list>
+				<value>classpath:com/trx/ibatis/sql/*.xml</value>
+			</list>
+		</property>
+	</bean>
+
+	<!-- Transaction Manager -->
+	<bean id="transactionManager_msb"
+		class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+		<property name="dataSource" ref="msbdataSource" />
+	</bean>
+
+	<bean id="msbibatis" class="org.apache.camel.component.ibatis.IBatisComponent">
+		<property name="sqlMapClient" ref="sqlMapClient_msb" />
+	</bean>
+
+	<!-- ActiveMQ 98번 -->
+	<bean id="activeMQConnectionFactory" class="org.apache.activemq.ActiveMQConnectionFactory">
+		<property name="brokerURL" value="#{prop['amq98.url']}" />
+		<property name="userName" value="#{prop['amq98.id']}" />
+		<property name="password" value="#{prop['amq98.pw']}" />
+		<property name="prefetchPolicy">
+			<bean class="org.apache.activemq.ActiveMQPrefetchPolicy">
+				<property name="queuePrefetch" value="0" />
+			</bean>
+		</property>
+	</bean>
+	<!-- MQ connection cache 속도 향상 -->
+	<bean id="amqConnectionFactory" class="org.springframework.jms.connection.CachingConnectionFactory">
+		<property name="targetConnectionFactory" ref="activeMQConnectionFactory" />
+		<property name="cacheConsumers" value="false" />
+		<property name="reconnectOnException" value="true" />
+	</bean>
+
+	<bean id="amqTxManager" class="org.springframework.jms.connection.JmsTransactionManager">
+		<property name="connectionFactory" ref="amqConnectionFactory" />
+	</bean>
+<!-- 	AMQ transactionManager -->
+	<bean id="amqTransactionPolicy" class="org.apache.camel.spring.spi.SpringTransactionPolicy">
+		<property name="transactionManager" ref="amqTxManager" />
+		<property name="propagationBehaviorName" value="PROPAGATION_REQUIRED" />
+	</bean>
+
+	<bean id="amq" class="org.apache.activemq.camel.component.ActiveMQComponent">
+		<property name="connectionFactory" ref="amqConnectionFactory" />
+		<property name="transactionManager" ref="amqTxManager" />
+	<!-- 	<property name="concurrentConsumers" value="5" /> -->
+		<property name="transacted" value="true" />
+	</bean>
+
+
+
+	<bean id="reverseKey" class="com.trx.validate.ReverseKey" />
+	<bean id="headercheck" class="com.trx.validate.HeaderCheck" />
+	<bean id="ackheadercheck" class="com.trx.validate.AckHeaderCheck" />
+	<bean id="pimacheck" class="com.trx.validate.PimaCheck" />
+	<bean id="messageselct" class="com.trx.db.MessageSelect" />
+	<bean id="createmsg" class="com.trx.Msgprocess.CreateMSG" />
+	<bean id="createack" class="com.trx.Msgprocess.CreateAck" />
+	<bean id="conversionmsg" class="com.trx.Msgprocess.ConversionMSG" />
+	<bean id="airlinecheck" class="com.trx.db.AirlineSelect" />
+	<bean id="ackselect" class="com.trx.db.DbSelectTrace" />
+	<bean id="cargoimpcheck" class="com.trx.validate.CargoImpCheck" />
+	<bean id="validationdoc" class="com.trx.validate.ValidationDoc" />
+	<bean id="ikamsvalidationdoc" class="com.trx.validate.IkamsValidationDoc" />
+	<bean id="validationbiz" class="com.trx.validate.ValidationBiz" />
+	<bean id="routing" class="com.trx.Msgprocess.Routing" />
+	<bean id="ikamsrouting" class="com.trx.Msgprocess.IkamsRouting" />
+	<bean id="routingbiz" class="com.trx.Msgprocess.RoutingBIZ" />
+	<bean id="dbinserttrace" class="com.trx.db.DbinsertTrace" />
+	<bean id="mainExceptionManager" class="com.trx.util.MainExceptionManager" />
+	<bean id="common" class="com.trx.util.CommonUtil" />
+	<bean id="commonSql" class="com.trx.util.CommonSql" />
+
+	<bean id="uuidGenerator" class="org.apache.camel.impl.ActiveMQUuidGenerator" />
+
+
+  <camel:camelContext xmlns="http://camel.apache.org/schema/spring">
+
+<!--
+  <properties>
+           <property key="CamelLogDebugBodyMaxChars" value="500"/>
+      </properties> -->
+	<!--propeties 외부에서 설정 값 적용 시 경로 지정  -->
+	<!-- <propertyPlaceholder id="properties" location="classpath:traxon.properties" /> -->
+	<!-- <propertyPlaceholder id="properties" location="file:D:/JBoss/workspace/AMS2.0/propeties/traxon.properties" /> -->
+	<propertyPlaceholder id="properties" location="file:D:/DEAMON/AMS_MAIN/traxon.properties" />
+<!-- <propertyPlaceholder id="properties" location="file:/data/GL/Client/traxon.properties"/> -->
+	<!-- <propertyPlaceholder id="properties" location="file:C:/DEAMON/AMS_MAIN/traxon.properties" /> -->
+	<!-- <propertyPlaceholder id="properties" location="file:D:/DEAMON/TEST_DEAMON/AMS_MAIN/traxon.properties" /> -->
+	<!-- indexOf 기능 <simple>${header.BODY} contains 'OCI/KR/EXP/I'</simple> -->
+
+
+	<route id="FHLEXP">
+		<!-- <from uri="file:D:/EXPORT/RCVD/FHL?delete=true&amp;delay=10" /> -->
+		<!-- <from uri="file:/data/GL/Client/EXPORT/RCVD/FHL?delete=true&amp;delay=10" /> -->
+		<from uri="amq:queue:EXP.FHLEXP2AMS.LQ?jmsMessageType=Text&amp;concurrentConsumers=1&amp;maxConcurrentConsumers=3&amp;idleConsumerLimit=2" />
+		<transacted ref="amqTransactionPolicy" />
+		<convertBodyTo type="java.lang.String"/>
+		<log message="${body}"/>
+		<to uri="bean:headercheck?method=smiCheck" />
+		<choice>
+			<when>
+				<simple>${header.HEADER_SMI} == 'FWB'</simple>
+				<log message="${body}"/>
+				<to uri="amq:queue:EAWB.FWB2EAWB.LQ?jmsMessageType=Text" />
+				<to uri="file://{{file.errorDir}}?fileName=${bean:common?method=getCurrentTime}" />
+				<log message="=============== FWB Input Error ==============="/>
+			</when>
+			<otherwise>
+				<log message="=============== EXP.FHLEXP2AMS.LQ Start===============" />
+				<!-- from절에 대한 transation임. to가 실패 할 경우 다음 to가 아닌 처음 to로 돌아가게끔 롤백 기능(queue 처리 할때는 필수) -->
+				<to uri="bean:reverseKey?method=mainStart" />
+				<to uri="bean:headercheck?method=headerCheck" />
+				<choice>
+					<when>
+						<simple>${header.HEADER_CHECK_FLAG} == true</simple>
+						<to uri="bean:pimacheck?method=PimaCheck" />
+						<choice>
+							<when>
+								<simple>${header.Pima_Check_Flag} == true</simple>
+								<to uri="bean:airlinecheck?method=airlineSelect"/>
+						 		<choice>
+									<when>
+										<simple>${header.Air_Check_Flag} == true</simple>
+										<log message="=============== AMS/IKAMS Check ===============" />
+										<choice>
+											<when>
+												<simple>${header.BODY} contains 'OCI/KR/EXP/M/' or ${header.BODY} contains 'OCI/KR/IMP/M/'</simple>
+													<log message="=============== AMS START ===============" />
+													<to uri="direct:AMS_SEND"/>
+													<choice>
+														<when>
+															<simple>${header.AMS_ROUTING_FLAG} == true</simple>
+																<log message="=============== IKAMS START ===============" />
+																<to uri="direct:IKAMS_SEND"/>
+														</when>
+													</choice>
+											</when>
+											<when>
+												<simple>${header.BODY} contains 'OCI/KR/EXP/A/' or ${header.BODY} contains 'OCI/KR/EXP/E/'</simple>
+													<log message="=============== AMS START ===============" />
+													<to uri="direct:AMS_SEND"/>
+											</when>
+											<when>
+											<!-- 20161115 FLAG 'X' 추가 -->
+												<simple>${header.BODY} contains 'OCI/KR/EXP/I/' or ${header.BODY} contains 'OCI/KR/IMP/I/' or ${header.BODY} contains 'OCI/KR/EXP/X/'</simple>
+													<log message="=============== IKAMS START ===============" />
+													<to uri="direct:IKAMS_SEND"/>
+											</when>
+											<otherwise>
+												<log message="=============== AMS START ===============" />
+												<to uri="direct:AMS_SEND"/>
+											</otherwise>
+										</choice>
+										<log message="=============== AMS/IKAMS Check End ===============" />
+									</when>
+									<otherwise>
+										<choice>
+											<when>
+												<simple>${header.BODY} contains 'OCI/KR/EXP/M/' or ${header.BODY} contains 'OCI/KR/IMP/M/' or ${header.BODY} contains 'OCI/KR/EXP/A/' or ${header.BODY} contains 'OCI/KR/EXP/E/'</simple>
+													<to uri="bean:validationdoc?method=validationDoc" />
+											</when>
+											<when>
+												<simple>${header.BODY} contains 'OCI/KR/EXP/I/' or ${header.BODY} contains 'OCI/KR/IMP/I/' or ${header.BODY} contains 'OCI/KR/EXP/X/'</simple>
+													<to uri="bean:ikamsvalidationdoc?method=ikamsvalidationDoc" />
+											</when>
+										</choice>
+									</otherwise>
+								</choice>
+							</when>
+							<otherwise>
+								<choice>
+									<when>
+										<simple>${header.BODY} contains 'OCI/KR/EXP/M/' or ${header.BODY} contains 'OCI/KR/IMP/M/' or ${header.BODY} contains 'OCI/KR/EXP/A/' or ${header.BODY} contains 'OCI/KR/EXP/E/'</simple>
+											<to uri="bean:validationdoc?method=validationDoc" />
+									</when>
+									<when>
+										<simple>${header.BODY} contains 'OCI/KR/EXP/I/' or ${header.BODY} contains 'OCI/KR/IMP/I/' or ${header.BODY} contains 'OCI/KR/EXP/X/'</simple>
+											<to uri="bean:ikamsvalidationdoc?method=ikamsvalidationDoc" />
+									</when>
+								</choice>
+							</otherwise>
+						</choice>
+					</when>
+				</choice>
+				<log message="=============== EXP.FHLEXP2AMS.LQ End ===============" />
+			</otherwise>
+		</choice>
+	</route>
+
+ 	<route id="FHLGEN">
+		<!-- <from uri="file:D:/IMPORT/RCVD/GEN?delete=true&amp;delay=10" /> -->
+		<from uri="amq:queue:IMP.FHLGEN2AMS.LQ?jmsMessageType=Text&amp;concurrentConsumers=1&amp;maxConcurrentConsumers=3&amp;idleConsumerLimit=2" />
+		<transacted ref="amqTransactionPolicy" />
+		<convertBodyTo type="java.lang.String"/>
+		<log message="${body}"/>
+		<to uri="bean:headercheck?method=smiCheck" />
+		<choice>
+			<when>
+				<simple>${header.HEADER_SMI} == 'FWB'</simple>
+				<log message="${body}"/>
+				<to uri="amq:queue:EAWB.FWB2EAWB.LQ?jmsMessageType=Text" />
+				<to uri="file://{{file.errorDir}}?fileName=${bean:common?method=getCurrentTime}" />
+				<log message="=============== FWB Input Error ==============="/>
+			</when>
+			<otherwise>
+				<log message="=============== IMP.FHLGEN2AMS.LQ Start===============" />
+				<!-- from절에 대한 transation임. to가 실패 할 경우 다음 to가 아닌 처음 to로 돌아가게끔 롤백 기능(queue 처리 할때는 필수) -->
+				<to uri="bean:reverseKey?method=mainStart" />
+				<to uri="bean:headercheck?method=headerCheck" />
+				<choice>
+					<when>
+						<simple>${header.HEADER_CHECK_FLAG} == true</simple>
+						<to uri="bean:pimacheck?method=PimaCheck" />
+						<choice>
+							<when>
+								<simple>${header.Pima_Check_Flag} == true</simple>
+								<to uri="bean:airlinecheck?method=airlineSelect"/>
+						 		<choice>
+									<when>
+										<simple>${header.Air_Check_Flag} == true</simple>
+										<log message="=============== AMS/IKAMS Check ===============" />
+										<choice>
+											<when>
+												<simple>${header.BODY} contains 'OCI/KR/EXP/M/' or ${header.BODY} contains 'OCI/KR/IMP/M/'</simple>
+													<log message="=============== AMS START ===============" />
+													<to uri="direct:AMS_SEND"/>
+													<choice>
+														<when>
+															<simple>${header.AMS_ROUTING_FLAG} == true</simple>
+																<log message="=============== IKAMS START ===============" />
+																<to uri="direct:IKAMS_SEND"/>
+														</when>
+													</choice>
+											</when>
+											<when>
+												<simple>${header.BODY} contains 'OCI/KR/EXP/A/' or ${header.BODY} contains 'OCI/KR/EXP/E/'</simple>
+													<log message="=============== AMS START ===============" />
+													<to uri="direct:AMS_SEND"/>
+											</when>
+											<when>
+											<!-- 20161115 FLAG 'X' 추가 -->
+												<simple>${header.BODY} contains 'OCI/KR/EXP/I/' or ${header.BODY} contains 'OCI/KR/IMP/I/' or ${header.BODY} contains 'OCI/KR/EXP/X/'</simple>
+													<log message="=============== IKAMS START ===============" />
+													<to uri="direct:IKAMS_SEND"/>
+											</when>
+											<otherwise>
+												<log message="=============== AMS START ===============" />
+												<to uri="direct:AMS_SEND"/>
+											</otherwise>
+										</choice>
+										<log message="=============== AMS/IKAMS Check End ===============" />
+									</when>
+									<otherwise>
+										<choice>
+											<when>
+												<simple>${header.BODY} contains 'OCI/KR/EXP/M/' or ${header.BODY} contains 'OCI/KR/IMP/M/' or ${header.BODY} contains 'OCI/KR/EXP/A/' or ${header.BODY} contains 'OCI/KR/EXP/E/'</simple>
+													<to uri="bean:validationdoc?method=validationDoc" />
+											</when>
+											<when>
+												<simple>${header.BODY} contains 'OCI/KR/EXP/I/' or ${header.BODY} contains 'OCI/KR/IMP/I/' or ${header.BODY} contains 'OCI/KR/EXP/X/'</simple>
+													<to uri="bean:ikamsvalidationdoc?method=ikamsvalidationDoc" />
+											</when>
+										</choice>
+									</otherwise>
+								</choice>
+							</when>
+							<otherwise>
+								<choice>
+									<when>
+										<simple>${header.BODY} contains 'OCI/KR/EXP/M/' or ${header.BODY} contains 'OCI/KR/IMP/M/' or ${header.BODY} contains 'OCI/KR/EXP/A/' or ${header.BODY} contains 'OCI/KR/EXP/E/'</simple>
+											<to uri="bean:validationdoc?method=validationDoc" />
+									</when>
+									<when>
+										<simple>${header.BODY} contains 'OCI/KR/EXP/I/' or ${header.BODY} contains 'OCI/KR/IMP/I/' or ${header.BODY} contains 'OCI/KR/EXP/X/'</simple>
+											<to uri="bean:ikamsvalidationdoc?method=ikamsvalidationDoc" />
+									</when>
+								</choice>
+							</otherwise>
+						</choice>
+					</when>
+				</choice>
+				<log message="=============== IMP.FHLGEN2AMS.LQ End ===============" />
+			</otherwise>
+		</choice>
+	</route>
+
+ 	<route id="FHLSPC">
+		<!-- <from uri="file:D:/IMPORT/RCVD/SPC?delete=true&amp;delay=10" /> -->
+		<from uri="amq:queue:IMP.FHLSPC2AMS.LQ?jmsMessageType=Text&amp;concurrentConsumers=1&amp;maxConcurrentConsumers=3&amp;idleConsumerLimit=2" />
+		<transacted ref="amqTransactionPolicy" />
+		<convertBodyTo type="java.lang.String"/>
+		<log message="${body}"/>
+		<to uri="bean:headercheck?method=smiCheck" />
+		<choice>
+			<when>
+				<simple>${header.HEADER_SMI} == 'FWB'</simple>
+				<log message="${body}"/>
+				<to uri="amq:queue:EAWB.FWB2EAWB.LQ?jmsMessageType=Text" />
+				<to uri="file://{{file.errorDir}}?fileName=${bean:common?method=getCurrentTime}" />
+				<log message="=============== FWB Input Error ==============="/>
+			</when>
+			<otherwise>
+				<log message="=============== IMP.FHLSPC2AMS.LQ Start===============" />
+				<!-- from절에 대한 transation임. to가 실패 할 경우 다음 to가 아닌 처음 to로 돌아가게끔 롤백 기능(queue 처리 할때는 필수) -->
+				<to uri="bean:reverseKey?method=mainStart" />
+				<to uri="bean:headercheck?method=headerCheck" />
+				<choice>
+					<when>
+						<simple>${header.HEADER_CHECK_FLAG} == true</simple>
+						<to uri="bean:pimacheck?method=PimaCheck" />
+						<choice>
+							<when>
+								<simple>${header.Pima_Check_Flag} == true</simple>
+								<to uri="bean:airlinecheck?method=airlineSelect"/>
+						 		<choice>
+									<when>
+										<simple>${header.Air_Check_Flag} == true</simple>
+										<log message="=============== AMS/IKAMS Check ===============" />
+										<choice>
+											<when>
+												<simple>${header.BODY} contains 'OCI/KR/EXP/M/' or ${header.BODY} contains 'OCI/KR/IMP/M/'</simple>
+													<log message="=============== AMS START ===============" />
+													<to uri="direct:AMS_SEND"/>
+													<choice>
+														<when>
+															<simple>${header.AMS_ROUTING_FLAG} == true</simple>
+																<log message="=============== IKAMS START ===============" />
+																<to uri="direct:IKAMS_SEND"/>
+														</when>
+													</choice>
+											</when>
+											<when>
+												<simple>${header.BODY} contains 'OCI/KR/EXP/A/' or ${header.BODY} contains 'OCI/KR/EXP/E/'</simple>
+													<log message="=============== AMS START ===============" />
+													<to uri="direct:AMS_SEND"/>
+											</when>
+											<when>
+											<!-- 20161115 FLAG 'X' 추가 -->
+												<simple>${header.BODY} contains 'OCI/KR/EXP/I/' or ${header.BODY} contains 'OCI/KR/IMP/I/' or ${header.BODY} contains 'OCI/KR/EXP/X/'</simple>
+													<log message="=============== IKAMS START ===============" />
+													<to uri="direct:IKAMS_SEND"/>
+											</when>
+											<otherwise>
+												<log message="=============== AMS START ===============" />
+												<to uri="direct:AMS_SEND"/>
+											</otherwise>
+										</choice>
+										<log message="=============== AMS/IKAMS Check End ===============" />
+									</when>
+									<otherwise>
+										<choice>
+											<when>
+												<simple>${header.BODY} contains 'OCI/KR/EXP/M/' or ${header.BODY} contains 'OCI/KR/IMP/M/' or ${header.BODY} contains 'OCI/KR/EXP/A/' or ${header.BODY} contains 'OCI/KR/EXP/E/'</simple>
+													<to uri="bean:validationdoc?method=validationDoc" />
+											</when>
+											<when>
+												<simple>${header.BODY} contains 'OCI/KR/EXP/I/' or ${header.BODY} contains 'OCI/KR/IMP/I/' or ${header.BODY} contains 'OCI/KR/EXP/X/'</simple>
+													<to uri="bean:ikamsvalidationdoc?method=ikamsvalidationDoc" />
+											</when>
+										</choice>
+									</otherwise>
+								</choice>
+							</when>
+							<otherwise>
+								<choice>
+									<when>
+										<simple>${header.BODY} contains 'OCI/KR/EXP/M/' or ${header.BODY} contains 'OCI/KR/IMP/M/' or ${header.BODY} contains 'OCI/KR/EXP/A/' or ${header.BODY} contains 'OCI/KR/EXP/E/'</simple>
+											<to uri="bean:validationdoc?method=validationDoc" />
+									</when>
+									<when>
+										<simple>${header.BODY} contains 'OCI/KR/EXP/I/' or ${header.BODY} contains 'OCI/KR/IMP/I/' or ${header.BODY} contains 'OCI/KR/EXP/X/'</simple>
+											<to uri="bean:ikamsvalidationdoc?method=ikamsvalidationDoc" />
+									</when>
+								</choice>
+							</otherwise>
+						</choice>
+					</when>
+				</choice>
+				<log message="=============== IMP.FHLSPC2AMS.LQ End ===============" />
+			</otherwise>
+		</choice>
+	</route>
+
+	<!-- AMS -->
+	<route id="AMS">
+	<from uri="direct:AMS_SEND" />
+	<log message="=============== AMS ROUTING START ===============" />
+		<to uri="bean:validationdoc?method=validationDoc" />
+			<choice>
+				<when>
+					<simple>${header.AMS_Validation_Check_Flag} == true</simple>
+					<to uri="bean:routing?method=routing" />
+					<choice>
+						<when>
+							<simple>${header.AIR_CARR_CODE} == '7C'</simple>
+							<to uri="bean:routingbiz?method=routing7CBIZ"/>
+						</when>
+					</choice>
+				</when>
+			</choice>
+	<log message="=============== AMS ROUTING END ===============" />
+	</route>
+
+	<!-- IKAMS -->
+	<route id="IKAMS">
+	<from uri="direct:IKAMS_SEND" />
+	<log message="=============== IKAMS ROUTING START ===============" />
+		<to uri="bean:ikamsvalidationdoc?method=ikamsvalidationDoc" />
+			<choice>
+				<when>
+					<simple>${header.IKAMS_Validation_Check_Flag} == true</simple>
+				 	<to uri="bean:ikamsrouting?method=ikamsrouting" />
+				</when>
+			</choice>
+	<log message="=============== IKAMS ROUTING END ===============" />
+	</route>
+
+	<route id="AMS2MSB_QUEUESEND">
+		<from uri="direct:AMS2MSBqueuesend" />
+		<log message="=============== AMS2MSB QUEUE Send ===============" />
+			<to uri="amq:queue:AMS2MSB.LQ?jmsMessageType=Text" />
+		 	<to uri="stream:out" />
+		 	<to uri="file://{{fhl.write.path}}?fileName=${date:now:yyyyMMdd}/${header.FILENAME}" />
+		 <log message="=============== AMS2MSB QUEUE Send End ===============" />
+	</route>
+
+	<route id="AMS2TYPEB_QUEUESEND">
+		<from uri="direct:AMS2TYPEBqueuesend" />
+		<log message="=============== AMS2TYPEB QUEUE Send ===============" />
+			<to uri="amq:queue:TRAXON.AKE1MHS.TYPEB.CONVERT?jmsMessageType=Text" />
+		 	<to uri="stream:out" />
+			<to uri="file://{{typeb.write.path}}?fileName=${date:now:yyyyMM}/${header.TYPEBFILE}" />
+		 <log message="=============== AMS2TYPEB QUEUE Send End ===============" />
+	</route>
+
+	<route id="AMS2KTNETAMS_QUEUESEND">
+		<from uri="direct:AMS2KTNETAMSqueuesend" />
+		<log message="=============== AMS2KTNET AMS QUEUE Send ===============" />
+			<!-- <to uri="amq:queue:AMS2KTNETAMS.LQ?jmsMessageType=Text" /> -->
+			<to uri="amq:queue:AMS2KTNETFHL.LQ?jmsMessageType=Text" />
+		 	<to uri="stream:out" />
+		 	<to uri="file://{{ktnet.ams.write.path}}?fileName=${date:now:yyyyMM}/${header.KTAMSFILE}" />
+		 <log message="=============== AMS2KTNET AMS QUEUE Send End ===============" />
+	</route>
+
+	<route id="AMS2KTNETFHL_QUEUESEND">
+		<from uri="direct:AMS2KTNETFHLqueuesend" />
+		<log message="=============== AMS2KTNET FHL QUEUE Send ===============" />
+			<to uri="amq:queue:AMS2KTNETFHL.LQ?jmsMessageType=Text" />
+		 	<to uri="stream:out" />
+		 	<to uri="file://{{ktnet.fhl.write.path}}?fileName=${date:now:yyyyMM}/${header.KTFHLFILE}" />
+		 <log message="=============== AMS2KTNET FHL QUEUE Send End ===============" />
+	</route>
+
+	<!--  KCNET FHL AMQ 전송 -->
+	<route id="AMS2KCNETFHL_QUEUESEND">
+		<from uri="direct:AMS2KCNETFHLqueuesend" />
+		<log message="=============== AMS2KCNET FHL QUEUE Send ===============" />
+			<to uri="amq:queue:AMS2KCNETFHL.LQ?jmsMessageType=Text" />
+		 	<to uri="stream:out" />
+		 	<to uri="file://{{kcnet.fhl.write.path}}?fileName=${date:now:yyyyMM}/${header.KCFHLFILE}" />
+		 <log message="=============== AMS2KCNET FHL QUEUE Send End ===============" />
+	</route>
+
+	<route id="MSB2AMS_ACK">
+		<!-- <from uri="file:D:/EXPORT/RCVD/ACK?delete=true&amp;delay=10" />  -->
+		<from uri="amq:queue:MSB2AMS.LQ?jmsMessageType=Text&amp;concurrentConsumers=1&amp;maxConcurrentConsumers=3&amp;idleConsumerLimit=2" />
+		<transacted ref="amqTransactionPolicy" />
+		<log message="=============== MSB2AMS ACK Create Start ===============" />
+			<to uri="bean:ackheadercheck?method=ackheaderCheck" />
+			<to uri="bean:ackselect?method=orgrouteSelect" />
+		 <log message="=============== MSB2AMS ACK Create End ===============" />
+	</route>
+
+ 	<route id="AMSACK_QUEUESEND">
+		<from uri="direct:AMSACKqueuesend" />
+		<log message="=============== AMS.FHLACK2AMS Queue Send ===============" />
+			<to uri="amq:queue:AMS.FHLACK2AMS.LQ?jmsMessageType=Text" />
+			<to uri="stream:out" />
+			<to uri="file://{{ack.write.path}}?fileName=${date:now:yyyyMMdd}/${header.ACKFILE}" />
+		 <log message="=============== AMS.FHLACK2AMS Queue Send End ===============" />
+	</route>
+
+    <route id="IKAMS_EXP_ACK">
+		 <from uri="timer://select?delay=10000&amp;period=30000" />
+		 <log message="=============== IKAMS EXP ACK Check ===============" />
+			 <to uri="bean:ackselect?method=ikamsEXPAck" />
+			 <to uri="stream:out" />
+		 <log message="=============== IKAMS EXP ACK Check End ===============" />
+	</route>
+
+   	<route id="IKAMS_IMP_ACK">
+		 <from uri="timer://select?delay=10000&amp;period=30000" />
+		 <log message="=============== IKAMS IMP ACK Check ===============" />
+			 <to uri="bean:ackselect?method=ikamsIMPAck" />
+			 <to uri="stream:out" />
+		 <log message="=============== IKAMS IMP ACK Check End ===============" />
+	</route>
+
+	<route id="WEB_REPROC">
+		<from uri="amq:queue:RE2AMS.LQ?jmsMessageType=Text&amp;concurrentConsumers=1&amp;maxConcurrentConsumers=3&amp;idleConsumerLimit=2" />
+			<transacted ref="amqTransactionPolicy" />
+			<convertBodyTo type="java.lang.String"/>
+			<log message="${body}"/>
+			<to uri="bean:headercheck?method=smiCheck" />
+		<choice>
+			<when>
+				<simple>${header.HEADER_SMI} == 'FWB'</simple>
+				<log message="${body}"/>
+				<to uri="amq:queue:EAWB.FWB2EAWB.LQ?jmsMessageType=Text" />
+				<to uri="file://{{file.errorDir}}?fileName=${bean:common?method=getCurrentTime}" />
+				<log message="=============== FWB Input Error ==============="/>
+			</when>
+			<otherwise>
+				<log message="=============== REPROCESS AMS Start ===============" />
+				<to uri="bean:reverseKey?method=mainStart" />
+				<to uri="bean:headercheck?method=headerCheck" />
+				<choice>
+					<when>
+						<simple>${header.HEADER_CHECK_FLAG} == true</simple>
+						<to uri="bean:pimacheck?method=PimaCheck" />
+						<choice>
+							<when>
+								<simple>${header.Pima_Check_Flag} == true</simple>
+								<to uri="bean:airlinecheck?method=airlineSelect"/>
+						 		<choice>
+									<when>
+										<simple>${header.Air_Check_Flag} == true</simple>
+										<log message="=============== AMS/IKAMS Check ===============" />
+										<choice>
+											<when>
+												<simple>${header.BODY} contains 'OCI/KR/EXP/M/' or ${header.BODY} contains 'OCI/KR/IMP/M/'</simple>
+													<log message="=============== AMS START ===============" />
+													<to uri="direct:AMS_SEND"/>
+													<choice>
+														<when>
+															<simple>${header.AMS_ROUTING_FLAG} == true</simple>
+																<log message="=============== IKAMS START ===============" />
+																<to uri="direct:IKAMS_SEND"/>
+														</when>
+													</choice>
+											</when>
+											<when>
+												<simple>${header.BODY} contains 'OCI/KR/EXP/A/' or ${header.BODY} contains 'OCI/KR/EXP/E/'</simple>
+													<log message="=============== AMS START ===============" />
+													<to uri="direct:AMS_SEND"/>
+											</when>
+											<when>
+											<!-- 20161115 FLAG 'X' 추가 -->
+												<simple>${header.BODY} contains 'OCI/KR/EXP/I/' or ${header.BODY} contains 'OCI/KR/IMP/I/' or ${header.BODY} contains 'OCI/KR/EXP/X/'</simple>
+													<log message="=============== IKAMS START ===============" />
+													<to uri="direct:IKAMS_SEND"/>
+											</when>
+											<otherwise>
+												<log message="=============== AMS START ===============" />
+												<to uri="direct:AMS_SEND"/>
+											</otherwise>
+										</choice>
+										<log message="=============== AMS/IKAMS Check End ===============" />
+									</when>
+									<otherwise>
+										<choice>
+											<when>
+												<simple>${header.BODY} contains 'OCI/KR/EXP/M/' or ${header.BODY} contains 'OCI/KR/IMP/M/' or ${header.BODY} contains 'OCI/KR/EXP/A/' or ${header.BODY} contains 'OCI/KR/EXP/E/'</simple>
+													<to uri="bean:validationdoc?method=validationDoc" />
+											</when>
+											<when>
+												<simple>${header.BODY} contains 'OCI/KR/EXP/I/' or ${header.BODY} contains 'OCI/KR/IMP/I/' or ${header.BODY} contains 'OCI/KR/EXP/X/'</simple>
+													<to uri="bean:ikamsvalidationdoc?method=ikamsvalidationDoc" />
+											</when>
+										</choice>
+									</otherwise>
+								</choice>
+							</when>
+							<otherwise>
+								<choice>
+									<when>
+										<simple>${header.BODY} contains 'OCI/KR/EXP/M/' or ${header.BODY} contains 'OCI/KR/IMP/M/' or ${header.BODY} contains 'OCI/KR/EXP/A/' or ${header.BODY} contains 'OCI/KR/EXP/E/'</simple>
+											<to uri="bean:validationdoc?method=validationDoc" />
+									</when>
+									<when>
+										<simple>${header.BODY} contains 'OCI/KR/EXP/I/' or ${header.BODY} contains 'OCI/KR/IMP/I/' or ${header.BODY} contains 'OCI/KR/EXP/X/'</simple>
+											<to uri="bean:ikamsvalidationdoc?method=ikamsvalidationDoc" />
+									</when>
+								</choice>
+							</otherwise>
+						</choice>
+					</when>
+				</choice>
+				 <log message="=============== REPROCESS AMS End ===============" />
+			</otherwise>
+		</choice>
+	</route>
+  </camel:camelContext>
+
+</beans>
+
